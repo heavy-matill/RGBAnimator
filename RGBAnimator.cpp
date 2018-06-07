@@ -35,14 +35,14 @@ RGBAnimation::~RGBAnimation()
 
 RGBAnimation* RGBFlashTask::GetAnimation()
 {
-    printf("getting flash animation pointer");
+    printf("getting flash animation pointer\n");
     RGBAnimation* rgb_animation_ptr = new RGBFlashAnimation(color_from, color_to, time_on, time_off, num_repetitions, b_repeat);
     return rgb_animation_ptr;
 };
 
 RGBAnimation* RGBFadeTask::GetAnimation()
 {
-    printf("getting fade animation pointer");
+    printf("getting fade animation pointer\n");
     RGBAnimation* rgb_animation_ptr = new RGBFadeAnimation(color_from, color_to, time_duration, b_repeat);
     return rgb_animation_ptr;
 };
@@ -69,12 +69,42 @@ RGBFlashAnimation::~RGBFlashAnimation()
 
 };
 
-void RGBFlashAnimation::Update()
+bool RGBFlashAnimation::Update(unsigned int delta_time)
 {
-    printf("updating flash");
+    printf("updating flash\n");
+
+    // Animation finished already
+    if(time_duration == 0)
+        return false;
+
+    // Animation needs more time for the next frame to be displayed
+    if (delta_time < interval_)
+        return true;
+
+    // Get progress in percent since last update
+    float percent = (float)time_diff / (float)duration_;
+    percent_done_ += percent;
+
+    // If progress has reached 100%, set color to final target color
+    if (percent >= 1) {
+        StopFade();
+        SetValue(target_r_, target_g_, target_b_);
+        return false;
+    }
+
+    // Calculate color  how it should be according to progress
+    color_t cur_color = color_t.fade(start_color, end_color, progress);
+
+    SetValue(value_r_ + increment_r, value_g_ + increment_g, value_b_ + increment_b);
+
+    // Update time and finish
+    duration_ -= time_diff;
+    last_step_time_ = millis();
+    return true;
 };
 
-void RGBFadeAnimation::Update()
+bool RGBFadeAnimation::Update()
 {
-    printf("updating fade");
+    printf("updating fade\n");
+    return false;
 };

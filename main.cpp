@@ -6,7 +6,7 @@ using namespace std;
 
 int main()
 {
-    cout<<"Hello World2";
+    cout<<"Hello World\n";
 
     RGBAnimator animor;
 
@@ -15,7 +15,7 @@ int main()
     animor.RGBTaskList.push_back(fdt1);  
     animor.RGBTaskList.push_back(flt1);  
     RGBTask* task = *animor.RGBTaskList.begin();
-    task->GetAnimation();
+    task->GetAnimation()->Update();
     getchar();
     return 0;
 

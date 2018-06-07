@@ -3,16 +3,25 @@
 
 #include <list>
 
-typedef struct color
+class color_t
 {
+    public:
     uint8_t R,G,B;
-} color_t;
+    color_t(R,G,B);
+    color_t fade(color_t c1, color_t c2, float progress)
+    {   
+        int color_diff_r = c2.R - c1.R;
+        int color_diff_g = c2.G - c1.G;
+        int color_diff_b = c2.B - c1.B;;
+        return color_t(c1.R+round(f*color_diff_r),c1.G+round(f*color_diff_g), c1.B+round(f*color_diff_b));
+    }
+}
 
 class RGBAnimation
 {
   public:
     color_t color_current;
-    virtual void Update() = 0;
+    virtual bool Update() = false;
     virtual ~RGBAnimation();
 };
 
@@ -24,7 +33,7 @@ class RGBFlashAnimation : public RGBAnimation//, public RGBFlashTask
     uint8_t num_repetitions;
     RGBFlashAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new);// = false);
     ~RGBFlashAnimation();
-    void Update();
+    bool Update();
 };
 
 class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
@@ -33,7 +42,7 @@ class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
     uint8_t time_duration;
     RGBFadeAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_duration_new, bool b_repeat_new);// = false);
     ~RGBFadeAnimation();
-    void Update();
+    bool Update();
 
 };
 

@@ -21,7 +21,7 @@ class RGBAnimation
 {
   public:
     color_t color_current;
-    virtual bool Update() = false;
+    virtual bool Update(uint8_t time_delta) = false;
     virtual ~RGBAnimation();
 };
 
@@ -33,7 +33,7 @@ class RGBFlashAnimation : public RGBAnimation//, public RGBFlashTask
     uint8_t num_repetitions;
     RGBFlashAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new);// = false);
     ~RGBFlashAnimation();
-    bool Update();
+    bool Update(uint8_t time_delta);
 };
 
 class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
@@ -42,7 +42,7 @@ class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
     uint8_t time_duration;
     RGBFadeAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_duration_new, bool b_repeat_new);// = false);
     ~RGBFadeAnimation();
-    bool Update();
+    bool Update(uint8_t time_delta);
 
 };
 

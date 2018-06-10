@@ -71,13 +71,14 @@ bool RGBFlashAnimation::Update(uint8_t time_delta)
 RGBFadeAnimation::RGBFadeAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_duration_new, bool b_repeat_new)
 {
     // Color hasn't changed
-    if ((value_r == value_r_)&&(value_g==value_g_)&&(value_b==value_b_)) {
+    // overload operartor!
+    if (color_from_new==color_to_new) {
         return;
     }
 
     // Fade duration is smaller than TIME_MIN_DELTA
-    if (time <= TIME_MIN_DELTA) {
-        col_cur = color_to_new;
+    if (time_duration_new <= TIME_MIN_DELTA) {
+        color_current = color_to_new;
         return;
     }
     time_collective_delta_ = 0;
@@ -120,7 +121,7 @@ bool RGBFadeAnimation::Update(uint8_t time_delta)
     }
 
     // Calculate color  how it should be according to progress
-    color_t col_cur = color_t.fade(col_from_, col_to_, fac_progress_);
+    col_cur = color_t.fade(col_from_, col_to_, fac_progress_);
 
     // Update time and finish
     duration_ -= time_diff;

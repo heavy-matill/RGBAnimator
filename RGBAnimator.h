@@ -7,21 +7,40 @@ class color_t
 {
     public:
     uint8_t R,G,B;
-    color_t(R,G,B);
+    color_t(){
+    R = 0;
+    G = 0;
+    B = 0;
+    };
+    color_t(uint8_t r, uint8_t g, uint8_t b)
+    {
+     R = r;
+     G = g;
+     B = b; 
+    };
     color_t fade(color_t c1, color_t c2, float progress)
     {   
         int color_diff_r = c2.R - c1.R;
         int color_diff_g = c2.G - c1.G;
         int color_diff_b = c2.B - c1.B;;
-        return color_t(c1.R+round(f*color_diff_r),c1.G+round(f*color_diff_g), c1.B+round(f*color_diff_b));
+        return color_t(c1.R+(int)(progress*color_diff_r),c1.G+(int)(progress*color_diff_g), c1.B+(int)(progress*color_diff_b));
     }
-}
+};
 
 class RGBAnimation
 {
   public:
     color_t color_current;
-    virtual bool Update(uint8_t time_delta) = false;
+    unsigned int time_collective_delta_;
+  //protected:
+    //part of time uration thst was progressed already (necessary?)
+    uint8_t time_progress_;
+    uint8_t time_duration_;
+    float fac_progress_;
+    color_t col_from_;
+    color_t col_to_;
+
+    virtual bool Update(uint8_t time_delta) = 0;
     virtual ~RGBAnimation();
 };
 

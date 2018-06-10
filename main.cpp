@@ -15,7 +15,7 @@ int main()
     animor.RGBTaskList.push_back(fdt1);  
     animor.RGBTaskList.push_back(flt1);  
     RGBTask* task = *animor.RGBTaskList.begin();
-    task->GetAnimation()->Update();
+    task->GetAnimation()->Update(10);
     getchar();
     return 0;
 

@@ -1,5 +1,4 @@
 #include "RGBAnimator.h"
-
 /*virtual RGBAnimation RGBTask::GetAnimation()
 {
     printf("nothing to get");
@@ -85,8 +84,8 @@ RGBFadeAnimation::RGBFadeAnimation(color_t color_from_new, color_t color_to_new,
     time_progress_ = 0;
     time_duration_ = time_duration_new;
     fac_progress_ = 0;
-    col_from_ = color_from_new;
-    col_to_ = color_to_new;
+    color_from_ = color_from_new;
+    color_to_ = color_to_new;
 
 
 };
@@ -94,6 +93,9 @@ RGBFadeAnimation::~RGBFadeAnimation()
 {
 
 };
+
+//return time until next. if opened with time_delta == 0, update to next step.
+// this way it can be used with interrupts
 bool RGBFadeAnimation::Update(uint8_t time_delta)
 {
     printf("updating fade\n");
@@ -104,7 +106,7 @@ bool RGBFadeAnimation::Update(uint8_t time_delta)
 
     // Animation needs more time for the next frame to be displayed
     time_collective_delta_ += time_delta;
-    if (time_collective_delta_ < time_min_delta_)    
+    if (time_collective_delta_ < TIME_MIN_DELTA)    
         return true;
     else
         time_progress_ += time_collective_delta_;
@@ -115,16 +117,16 @@ bool RGBFadeAnimation::Update(uint8_t time_delta)
 
     // If progress has reached 100%, set color to final target color
     if (fac_progress_ >= 1) {
-        col_cur = col_to_;
-        StopFade();
+        color_current = color_to_;
+        //StopFade();
         return false;
     }
 
     // Calculate color  how it should be according to progress
-    col_cur = color_t.fade(col_from_, col_to_, fac_progress_);
+    color_current = fade();
 
     // Update time and finish
-    duration_ -= time_diff;
-    last_step_time_ = millis();
+    //duration_ -= time_diff;
+    //last_step_time_ = millis();
     return true;
 };

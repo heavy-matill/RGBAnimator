@@ -1,6 +1,10 @@
 #ifndef RGBANIMATOR_H_
 #define RGBANIMATOR_H_
 
+#ifndef TIME_MIN_DELTA
+    #define TIME_MIN_DELTA 20 //ms
+#endif
+
 #include <list>
 
 class color_t
@@ -18,13 +22,11 @@ class color_t
      G = g;
      B = b; 
     };
-    color_t fade(color_t c1, color_t c2, float progress)
-    {   
-        int color_diff_r = c2.R - c1.R;
-        int color_diff_g = c2.G - c1.G;
-        int color_diff_b = c2.B - c1.B;;
-        return color_t(c1.R+(int)(progress*color_diff_r),c1.G+(int)(progress*color_diff_g), c1.B+(int)(progress*color_diff_b));
-    }
+    
+    bool operator==(const color_t other)
+    {
+      return (R==other.R&G==other.G&B==other.B);
+    };
 };
 
 class RGBAnimation
@@ -37,8 +39,8 @@ class RGBAnimation
     uint8_t time_progress_;
     uint8_t time_duration_;
     float fac_progress_;
-    color_t col_from_;
-    color_t col_to_;
+    color_t color_from_;
+    color_t color_to_;
 
     virtual bool Update(uint8_t time_delta) = 0;
     virtual ~RGBAnimation();
@@ -62,6 +64,14 @@ class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
     RGBFadeAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_duration_new, bool b_repeat_new);// = false);
     ~RGBFadeAnimation();
     bool Update(uint8_t time_delta);
+
+    color_t fade()
+    {   
+        int color_diff_r = color_to_.R - color_from_.R;
+        int color_diff_g = color_to_.G - color_from_.G;
+        int color_diff_b = color_to_.B - color_from_.B;;
+        return color_t(color_from_.R+(int)(fac_progress_*color_diff_r),color_from_.G+(int)(fac_progress_*color_diff_g), color_from_.B+(int)(fac_progress_*color_diff_b));
+    };
 
 };
 

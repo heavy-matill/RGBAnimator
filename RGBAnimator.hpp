@@ -43,62 +43,13 @@ class color_t
     };
 };
 
-class RGBAnimation
-{
-  public:
-    color_t color_current;
-    unsigned int time_collective_delta_;
-  //protected:
-    //part of time uration thst was progressed already (necessary?)
-    //uint8_t time_progress_;
-    uint8_t time_min_delta_;
-    float fac_progress_;
-    RGBTask* task_;
-    //uint8_t time_duration_; //
-    //color_t color_from_; //
-    //color_t color_to_;  //
-
-    virtual uint8_t Update(uint8_t time_delta) = 0;
-    virtual ~RGBAnimation();
-};
-
-class RGBFlashAnimation : public RGBAnimation//, public RGBFlashTask
-{
-  public:
-    uint8_t time_on;
-    uint8_t time_off;
-    uint8_t num_repetitions;
-    RGBFlashAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new);// = false);
-    ~RGBFlashAnimation();
-    uint8_t Update(uint8_t time_delta);
-};
-
-class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
-{
-  public:
-    uint8_t time_duration;
-    RGBFadeAnimation(RGBFadeTask* task_new);
-    ~RGBFadeAnimation();
-    uint8_t Update(uint8_t time_delta);
-
-    color_t fade()
-    {   
-        int color_diff_r = task_->color_to_.R - task_->color_from_.R;
-        int color_diff_g = task_->color_to_.G - task_->color_from_.G;
-        int color_diff_b = task_->color_to_.B - task_->color_from_.B;;
-        return color_t(color_from_.R+(int)(fac_progress_*color_diff_r),color_from_.G+(int)(fac_progress_*color_diff_g), color_from_.B+(int)(fac_progress_*color_diff_b));
-    };
-
-};
-
-
 class RGBTask
 {
   public:
     color_t color_from;
     color_t color_to;
     bool b_repeat;
-    virtual RGBAnimation* GetAnimation() = 0;
+    //virtual RGBAnimation* GetAnimation() = 0;
     //virtual RGBTask();
     virtual ~RGBTask();
 };
@@ -107,7 +58,7 @@ class RGBFadeTask : public RGBTask
 {
   public:
     uint8_t time_duration;
-    RGBAnimation* GetAnimation();
+    //RGBAnimation* GetAnimation();
     RGBFadeTask();
     RGBFadeTask(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new);
     ~RGBFadeTask();
@@ -119,9 +70,51 @@ class RGBFlashTask : public RGBTask
     uint8_t time_on;
     uint8_t time_off;
     uint8_t num_repetitions;
-    RGBAnimation* GetAnimation();
+    //RGBAnimation* GetAnimation();
     RGBFlashTask();
     ~RGBFlashTask();
+};
+
+
+class RGBAnimation
+{
+  public:
+    color_t color_current;
+    unsigned int time_collective_delta_;
+  //protected:
+    //part of time uration thst was progressed already (necessary?)
+    uint8_t time_progress_;
+    uint8_t time_min_delta_;
+    float fac_progress_;
+    //uint8_t time_duration_; //
+    //color_t color_from_; //
+    //color_t color_to_;  //
+
+    virtual uint8_t Update(uint8_t time_delta) = 0;
+    virtual ~RGBAnimation();
+};
+
+class RGBFlashAnimation : public RGBAnimation//, public RGBFlashTask
+{
+  public:
+    RGBFlashAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new);// = false);
+    ~RGBFlashAnimation();
+    uint8_t time_on;
+    uint8_t time_off;
+    uint8_t num_repetitions;
+    RGBFlashTask *task;
+    uint8_t Update(uint8_t time_delta);
+};
+
+class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
+{
+  public:
+    RGBFadeTask *task;
+    RGBFadeAnimation(RGBFadeTask* task_new);
+    ~RGBFadeAnimation();
+    uint8_t Update(uint8_t time_delta);
+
+    color_t fade();
 };
 
 class RGBAnimator
@@ -144,6 +137,7 @@ class RGBAnimator
     //void ResetDatCount();
     std::list<RGBTask*> RGBTaskList;
 };
+
 
 
 

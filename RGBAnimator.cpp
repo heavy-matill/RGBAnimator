@@ -1,4 +1,4 @@
-#include "RGBAnimator.h"
+#include "RGBAnimator.hpp"
 
 /*virtual RGBAnimation RGBTask::GetAnimation()
 {
@@ -37,7 +37,7 @@ RGBAnimation::~RGBAnimation()
 {
 };
 
-RGBAnimation* RGBFlashTask::GetAnimation()
+/*RGBAnimation* RGBFlashTask::GetAnimation()
 {
     printf("getting flash animation pointer\n");
     RGBAnimation* rgb_animation_ptr = new RGBFlashAnimation(color_from, color_to, time_on, time_off, num_repetitions, b_repeat);
@@ -49,7 +49,7 @@ RGBAnimation* RGBFadeTask::GetAnimation()
     printf("getting fade animation pointer\n");
     RGBAnimation* rgb_animation_ptr = new RGBFadeAnimation(color_from, color_to, time_duration, b_repeat);
     return rgb_animation_ptr;
-};
+};*/
 
 /*virtual void RGBAnimation::Update()
 {
@@ -72,32 +72,37 @@ uint8_t RGBFlashAnimation::Update(uint8_t time_delta)
     return true;
 };
 
-RGBFadeAnimation::RGBFadeAnimation(RGBFadeTask* task_new)
+RGBFadeAnimation::RGBFadeAnimation(RGBFadeTask *task_new)
 {
-    task_ = task_new;
+    task = task_new;
     // Color hasn't changed
     // overload operartor!
-    if (task_->color_from_new==task_->color_to_new) {
+    if (task->color_from==task->color_to) {
         return;
     }
 
     // Fade duration is smaller than TIME_MIN_DELTA
-    if (time_duration_new <= TIME_MIN_DELTA) {
-        color_current = color_to_new;
+    if (task->time_duration <= TIME_MIN_DELTA) {
+        color_current = task->color_to;
         return;
     }
     time_collective_delta_ = 0;
     time_progress_ = 0;
-    time_duration = time_duration_new;
     fac_progress_ = 0;
-    color_from_ = color_from_new;
-    color_to_ = color_to_new;
-    time_min_delta_ = MIN(TIME_MAX_DELTA,(MAX(TIME_MIN_DELTA, time_duration_/color_to_.maxDiff(color_from_))));
+    time_min_delta_ = MIN(TIME_MAX_DELTA,MAX(TIME_MIN_DELTA,task->time_duration/task->color_to.maxDiff(task->color_from)));
 
 };
 RGBFadeAnimation::~RGBFadeAnimation()
 {
 
+};
+
+color_t RGBFadeAnimation::fade()
+{   
+    int color_diff_r = task->color_to.R - task->color_from.R;
+    int color_diff_g = task->color_to.G - task->color_from.G;
+    int color_diff_b = task->color_to.B - task->color_from.B;;
+    return color_t(task->color_from.R+(int)(fac_progress_*color_diff_r), task->color_from.G+(int)(fac_progress_*color_diff_g), task->color_from.B+(int)(fac_progress_*color_diff_b));
 };
 
 //return time until next. if opened with time_delta == 0, update to next step.
@@ -107,23 +112,24 @@ uint8_t RGBFadeAnimation::Update(uint8_t time_delta)
     printf("updating fade\n");
 
     // Animation finished already
-    if(time_duration == 0)
+    if(task->time_duration == 0)
         return 0;
 
     // Animation needs more time for the next frame to be displayed
     time_collective_delta_ += time_delta;
-    if (time_collective_delta_ < time_min_delta_)    
+    if (time_collective_delta_ < time_min_delta_) { 
         return time_min_delta_ - time_collective_delta_;
-    else
+    } else {
         time_progress_ += time_collective_delta_;
         time_collective_delta_ = 0;
+    }
 
     // Get progress in percent since last update
-    float fac_progress_ = (float)time_progress_ / (float)time_duration_;
+    float fac_progress_ = (float)time_progress_/ (float)task->time_duration;
 
     // If progress has reached 100%, set color to final target color
     if (fac_progress_ >= 1) {
-        color_current = color_to_;
+        color_current = task->color_to;
         //StopFade();
         return 0;
     }

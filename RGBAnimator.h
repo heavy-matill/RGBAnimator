@@ -1,11 +1,21 @@
 #ifndef RGBANIMATOR_H_
 #define RGBANIMATOR_H_
-
+//ms
 #ifndef TIME_MIN_DELTA
-    #define TIME_MIN_DELTA 20 //ms
+    #define TIME_MIN_DELTA 20
+#endif
+//ms, maximum datatype of time_min_delta_ (uint8_t)
+#ifndef TIME_MAX_DELTA
+    #define TIME_MAX_DELTA 255
 #endif
 
+
 #include <list>
+
+
+#define MIN( a, b ) (a < b) ? a : b
+#define MAX( a, b ) (a > b) ? a : b
+#define POSDIFF( a, b ) (a > b) ? a - b : b - a
 
 class color_t
 {
@@ -27,6 +37,10 @@ class color_t
     {
       return (R==other.R&G==other.G&B==other.B);
     };
+    uint8_t maxDiff(const color_t other)
+    {
+      return MAX(MAX(POSDIFF(R, other.R), POSDIFF(G, other.G)), POSDIFF(B, other.B));
+    };
 };
 
 class RGBAnimation
@@ -36,13 +50,15 @@ class RGBAnimation
     unsigned int time_collective_delta_;
   //protected:
     //part of time uration thst was progressed already (necessary?)
-    uint8_t time_progress_;
-    uint8_t time_duration_;
+    //uint8_t time_progress_;
+    uint8_t time_min_delta_;
     float fac_progress_;
-    color_t color_from_;
-    color_t color_to_;
+    RGBTask* task_;
+    //uint8_t time_duration_; //
+    //color_t color_from_; //
+    //color_t color_to_;  //
 
-    virtual bool Update(uint8_t time_delta) = 0;
+    virtual uint8_t Update(uint8_t time_delta) = 0;
     virtual ~RGBAnimation();
 };
 
@@ -54,22 +70,22 @@ class RGBFlashAnimation : public RGBAnimation//, public RGBFlashTask
     uint8_t num_repetitions;
     RGBFlashAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new);// = false);
     ~RGBFlashAnimation();
-    bool Update(uint8_t time_delta);
+    uint8_t Update(uint8_t time_delta);
 };
 
 class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
 {
   public:
     uint8_t time_duration;
-    RGBFadeAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_duration_new, bool b_repeat_new);// = false);
+    RGBFadeAnimation(RGBFadeTask* task_new);
     ~RGBFadeAnimation();
-    bool Update(uint8_t time_delta);
+    uint8_t Update(uint8_t time_delta);
 
     color_t fade()
     {   
-        int color_diff_r = color_to_.R - color_from_.R;
-        int color_diff_g = color_to_.G - color_from_.G;
-        int color_diff_b = color_to_.B - color_from_.B;;
+        int color_diff_r = task_->color_to_.R - task_->color_from_.R;
+        int color_diff_g = task_->color_to_.G - task_->color_from_.G;
+        int color_diff_b = task_->color_to_.B - task_->color_from_.B;;
         return color_t(color_from_.R+(int)(fac_progress_*color_diff_r),color_from_.G+(int)(fac_progress_*color_diff_g), color_from_.B+(int)(fac_progress_*color_diff_b));
     };
 
@@ -93,6 +109,7 @@ class RGBFadeTask : public RGBTask
     uint8_t time_duration;
     RGBAnimation* GetAnimation();
     RGBFadeTask();
+    RGBFadeTask(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new);
     ~RGBFadeTask();
 };
 

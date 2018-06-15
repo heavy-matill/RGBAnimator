@@ -1,4 +1,5 @@
 #include "RGBAnimator.h"
+
 /*virtual RGBAnimation RGBTask::GetAnimation()
 {
     printf("nothing to get");
@@ -14,6 +15,10 @@ RGBFadeTask::RGBFadeTask()
 {
 
 };
+RGBFadeTask::RGBFadeTask(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new)
+{
+
+};    
 RGBFadeTask::~RGBFadeTask()
 {
 
@@ -61,17 +66,18 @@ RGBFlashAnimation::~RGBFlashAnimation()
 
 };
 
-bool RGBFlashAnimation::Update(uint8_t time_delta)
+uint8_t RGBFlashAnimation::Update(uint8_t time_delta)
 {
     printf("updating flash\n");
     return true;
 };
 
-RGBFadeAnimation::RGBFadeAnimation(color_t color_from_new, color_t color_to_new, uint8_t time_duration_new, bool b_repeat_new)
+RGBFadeAnimation::RGBFadeAnimation(RGBFadeTask* task_new)
 {
+    task_ = task_new;
     // Color hasn't changed
     // overload operartor!
-    if (color_from_new==color_to_new) {
+    if (task_->color_from_new==task_->color_to_new) {
         return;
     }
 
@@ -82,11 +88,11 @@ RGBFadeAnimation::RGBFadeAnimation(color_t color_from_new, color_t color_to_new,
     }
     time_collective_delta_ = 0;
     time_progress_ = 0;
-    time_duration_ = time_duration_new;
+    time_duration = time_duration_new;
     fac_progress_ = 0;
     color_from_ = color_from_new;
     color_to_ = color_to_new;
-
+    time_min_delta_ = MIN(TIME_MAX_DELTA,(MAX(TIME_MIN_DELTA, time_duration_/color_to_.maxDiff(color_from_))));
 
 };
 RGBFadeAnimation::~RGBFadeAnimation()
@@ -96,18 +102,18 @@ RGBFadeAnimation::~RGBFadeAnimation()
 
 //return time until next. if opened with time_delta == 0, update to next step.
 // this way it can be used with interrupts
-bool RGBFadeAnimation::Update(uint8_t time_delta)
+uint8_t RGBFadeAnimation::Update(uint8_t time_delta)
 {
     printf("updating fade\n");
 
     // Animation finished already
     if(time_duration == 0)
-        return false;
+        return 0;
 
     // Animation needs more time for the next frame to be displayed
     time_collective_delta_ += time_delta;
-    if (time_collective_delta_ < TIME_MIN_DELTA)    
-        return true;
+    if (time_collective_delta_ < time_min_delta_)    
+        return time_min_delta_ - time_collective_delta_;
     else
         time_progress_ += time_collective_delta_;
         time_collective_delta_ = 0;
@@ -119,7 +125,7 @@ bool RGBFadeAnimation::Update(uint8_t time_delta)
     if (fac_progress_ >= 1) {
         color_current = color_to_;
         //StopFade();
-        return false;
+        return 0;
     }
 
     // Calculate color  how it should be according to progress
@@ -128,5 +134,5 @@ bool RGBFadeAnimation::Update(uint8_t time_delta)
     // Update time and finish
     //duration_ -= time_diff;
     //last_step_time_ = millis();
-    return true;
+    return time_min_delta_;
 };

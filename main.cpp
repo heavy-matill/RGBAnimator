@@ -16,18 +16,18 @@ int main()
 
     RGBAnimator animor;
 
-    RGBFadeTask* fdt1 = new RGBFadeTask(color_t(0,255,0), color_t(255,0,100),1255,false);
-    //RGBFlashTask* flt1 = new RGBFlashTask();
+    RGBFadeTask* fdt1 = new RGBFadeTask(color_t(0,255,0), color_t(255,0,100),1255,4,false);
+    RGBFlashTask* flt1 = new RGBFlashTask(color_t(0,255,0), color_t(255,0,100),50,50,4,false);
     print_col(fdt1->color_from);
     print_col(fdt1->color_to);
-    animor.RGBTaskList.push_back(fdt1);  
-    //animor.RGBTaskList.push_back(flt1);  
+    //animor.RGBTaskList.push_back(fdt1);  
+    animor.RGBTaskList.push_back(flt1);  
     RGBTask* task = *animor.RGBTaskList.begin();
     RGBAnimation* anim = task->GetAnimation();
     while(anim->Update(20))
     {
         paint_col(anim->color_current);    
-        usleep(20000);
+        usleep(200000);
     }
     //paint_rgb(200, 50, 100);
     getchar();

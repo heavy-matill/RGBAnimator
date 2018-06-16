@@ -15,8 +15,12 @@ RGBFadeTask::RGBFadeTask()
 {
 
 };
-RGBFadeTask::RGBFadeTask(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new)
+RGBFadeTask::RGBFadeTask(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, bool b_repeat_new)
 {
+    color_from = color_from_new;
+    color_to = color_to_new;
+    time_duration = time_duration_new;
+    b_repeat = b_repeat_new;
 
 };    
 RGBFadeTask::~RGBFadeTask()
@@ -25,6 +29,10 @@ RGBFadeTask::~RGBFadeTask()
 };
 
 RGBFlashTask::RGBFlashTask()
+{
+
+};
+RGBFlashTask::RGBFlashTask(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new)
 {
 
 };
@@ -37,19 +45,19 @@ RGBAnimation::~RGBAnimation()
 {
 };
 
-/*RGBAnimation* RGBFlashTask::GetAnimation()
+RGBAnimation* RGBFlashTask::GetAnimation()
 {
     printf("getting flash animation pointer\n");
-    RGBAnimation* rgb_animation_ptr = new RGBFlashAnimation(color_from, color_to, time_on, time_off, num_repetitions, b_repeat);
+    RGBAnimation* rgb_animation_ptr =  new RGBFlashAnimation(this);
     return rgb_animation_ptr;
 };
 
 RGBAnimation* RGBFadeTask::GetAnimation()
 {
     printf("getting fade animation pointer\n");
-    RGBAnimation* rgb_animation_ptr = new RGBFadeAnimation(color_from, color_to, time_duration, b_repeat);
+    RGBAnimation* rgb_animation_ptr = new RGBFadeAnimation(this);
     return rgb_animation_ptr;
-};*/
+};
 
 /*virtual void RGBAnimation::Update()
 {
@@ -57,7 +65,7 @@ RGBAnimation* RGBFadeTask::GetAnimation()
 };*/
 
 
-RGBFlashAnimation::RGBFlashAnimation(color_t color_from, color_t color_to, uint8_t time_on, uint8_t time_off, uint8_t num_repetitions, bool b_repeat)
+RGBFlashAnimation::RGBFlashAnimation(RGBFlashTask* task_new)
 {
 
 };
@@ -72,7 +80,7 @@ uint8_t RGBFlashAnimation::Update(uint8_t time_delta)
     return true;
 };
 
-RGBFadeAnimation::RGBFadeAnimation(RGBFadeTask *task_new)
+RGBFadeAnimation::RGBFadeAnimation(RGBFadeTask* task_new)
 {
     task = task_new;
     // Color hasn't changed
@@ -89,8 +97,8 @@ RGBFadeAnimation::RGBFadeAnimation(RGBFadeTask *task_new)
     time_collective_delta_ = 0;
     time_progress_ = 0;
     fac_progress_ = 0;
-    time_min_delta_ = MIN(TIME_MAX_DELTA,MAX(TIME_MIN_DELTA,task->time_duration/task->color_to.maxDiff(task->color_from)));
-
+    time_min_delta_ = MAX(TIME_MIN_DELTA,(uint8_t)((float)task->time_duration/(float)task->color_to.maxDiff(task->color_from)));
+    // MIN TIME_MAX_DELTA ?
 };
 RGBFadeAnimation::~RGBFadeAnimation()
 {
@@ -116,16 +124,17 @@ uint8_t RGBFadeAnimation::Update(uint8_t time_delta)
         return 0;
 
     // Animation needs more time for the next frame to be displayed
-    time_collective_delta_ += time_delta;
+    /*time_collective_delta_ += time_delta;
     if (time_collective_delta_ < time_min_delta_) { 
         return time_min_delta_ - time_collective_delta_;
     } else {
         time_progress_ += time_collective_delta_;
         time_collective_delta_ = 0;
-    }
+    }*/
+    time_progress_ += time_delta;
 
     // Get progress in percent since last update
-    float fac_progress_ = (float)time_progress_/ (float)task->time_duration;
+    fac_progress_ = (float)time_progress_/ (float)task->time_duration;
 
     // If progress has reached 100%, set color to final target color
     if (fac_progress_ >= 1) {

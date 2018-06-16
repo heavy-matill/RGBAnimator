@@ -33,12 +33,12 @@ RGBFlashTask::RGBFlashTask()
 {
 
 };
-RGBFlashTask::RGBFlashTask(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new)
+RGBFlashTask::RGBFlashTask(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, uint8_t perc_on_new, uint8_t num_repetitions_new, bool b_repeat_new)
 {
     color_from = color_from_new;
     color_to = color_to_new;
-    time_on = time_on_new;
-    time_off = time_off_new;
+    time_duration = time_duration_new;
+    perc_on = MIN(100,perc_on_new);
     num_repetitions = num_repetitions_new;
     b_repeat = b_repeat_new;
 };
@@ -75,8 +75,8 @@ RGBFlashAnimation::RGBFlashAnimation(RGBFlashTask* task_new)
 {
     task = task_new;
     num_rep_progress = task->num_repetitions;
-    b_state_on = true;
     time_progress_ = 0;
+    fac_progress_ = 0;
 };
 RGBFlashAnimation::~RGBFlashAnimation()
 {
@@ -86,51 +86,41 @@ RGBFlashAnimation::~RGBFlashAnimation()
 uint8_t RGBFlashAnimation::Update(uint8_t time_delta)
 {
     printf("updating flash\n");
-    // what if multiple are skipped?
-    //if (time_delta > (time_on+time_off)
     // skip reptitions?
-
-    time_progress_ += time_delta;
-    if (time_progress_ > (time_on+time_off))
+    if(time_delta>task->time_duration)
     {
-        //skip state?
+        uint8_t delta_rep = time_delta/task->time_duration;
+        num_rep_progress -= MIN(num_rep_progress, time_delta/task->time_duration);
+        time_delta -= task->time_duration*delta_rep;
     }
-    if(b_state_on)
-    {
-        if(time_progress_>=time_on)
+    time_progress_ += time_delta;
+    fac_progress_ = (float)time_progress_/(float)task->time_duration;
+
+    if(fac_progress_>=1.0)
+    {        
+            num_rep_progress--;
+        // Flash finished
+        if(num_rep_progress > 0)
         {
-            time_progress_ -= time_on;
-            color_current = task->color_to;
-            b_state_on = false;
-            return time_off-time_progress_;
+            // reset progress for next repetition
+            time_progress_ -= task->time_duration;
         }
         else
         {
-            color_current = task->color_from;
-            return time_on-time_progress_;
+            // no more flashes, stop
+            return 0;
         }
+    }
+    if(fac_progress_*100 > task->perc_on) 
+    {
+        color_current = task->color_to;
+        return LIM(task->time_duration-time_progress_);
+        
     }
     else
     {
-        if(time_progress_>=time_off)
-        {
-            num_rep_progress--;
-            // finish flashing
-            if(num_rep_progress==0)
-            {
-                return 0;
-            }
-                
-            time_progress_ -= time_off;
-            color_current = task->color_from;
-            b_state_on = true;
-            return time_on-time_progress_;
-        }
-        else
-        {
-            color_current = task->color_to;
-            return time_on-time_progress_;
-        }
+        color_current = task->color_from;
+        return LIM((float)task->time_duration/100.0*task->perc_on-time_progress_);
     }
 };
 
@@ -150,7 +140,7 @@ RGBFadeAnimation::RGBFadeAnimation(RGBFadeTask* task_new)
     }*/
     time_progress_ = 0;
     fac_progress_ = 0;
-    time_min_delta_ = MAX(TIME_MIN_DELTA,(uint8_t)((float)task->time_duration/(float)task->color_to.maxDiff(task->color_from)));
+    time_min_delta_ = LIM((uint8_t)((float)task->time_duration/(float)task->color_to.maxDiff(task->color_from)));
     // MIN TIME_MAX_DELTA ?
 };
 RGBFadeAnimation::~RGBFadeAnimation()

@@ -13,9 +13,10 @@
 #include <list>
 
 
-#define MIN( a, b ) (a < b) ? a : b
-#define MAX( a, b ) (a > b) ? a : b
-#define POSDIFF( a, b ) (a > b) ? a - b : b - a
+#define MIN( a, b ) ((a < b) ? a : b)
+#define MAX( a, b ) ((a > b) ? a : b)
+#define LIM( t ) (MAX(TIME_MIN_DELTA,MIN(TIME_MAX_DELTA, t )))
+#define POSDIFF( a, b ) ((a > b) ? a - b : b - a)
 
 class RGBAnimation;
 class RGBTask;
@@ -53,6 +54,7 @@ class RGBTask
     color_t color_to;
     uint8_t num_repetitions;
     bool b_repeat;
+    uint16_t time_duration;
     virtual RGBAnimation* GetAnimation() = 0;
     //virtual RGBTask();
     virtual ~RGBTask();
@@ -61,7 +63,6 @@ class RGBTask
 class RGBFadeTask : public RGBTask
 {
   public:
-    uint16_t time_duration;
     RGBAnimation* GetAnimation();
     RGBFadeTask();
     RGBFadeTask(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, uint8_t num_repetitions_new, bool b_repeat_new);
@@ -71,11 +72,10 @@ class RGBFadeTask : public RGBTask
 class RGBFlashTask : public RGBTask
 {
   public:
-    uint8_t time_on;
-    uint8_t time_off;
+    uint8_t perc_on;
     RGBAnimation* GetAnimation();
     RGBFlashTask();
-    RGBFlashTask(color_t color_from_new, color_t color_to_new, uint8_t time_on_new, uint8_t time_off_new, uint8_t num_repetitions_new, bool b_repeat_new);
+    RGBFlashTask(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, uint8_t perc_on_new, uint8_t num_repetitions_new, bool b_repeat_new);
     ~RGBFlashTask();
 };
 
@@ -103,9 +103,6 @@ class RGBFlashAnimation : public RGBAnimation//, public RGBFlashTask
   public:
     RGBFlashAnimation(RGBFlashTask* task_new);
     ~RGBFlashAnimation();
-    bool b_state_on;
-    uint8_t time_on;
-    uint8_t time_off;
     uint8_t num_repetitions;
     RGBFlashTask *task;
     uint8_t Update(uint8_t time_delta);

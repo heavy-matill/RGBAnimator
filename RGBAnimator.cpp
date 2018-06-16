@@ -65,7 +65,7 @@ RGBAnimation* RGBFadeTask::GetAnimation()
     return rgb_animation_ptr;
 };
 
-/*virtual void RGBAnimation::Update()
+/*virtual void RGBAnimation::update()
 {
     printf("nothing to update");
 };*/
@@ -83,7 +83,7 @@ RGBFlashAnimation::~RGBFlashAnimation()
 
 };
 
-uint8_t RGBFlashAnimation::Update(uint8_t time_delta)
+uint8_t RGBFlashAnimation::update(uint8_t time_delta)
 {
     printf("updating flash\n");
     // skip reptitions?
@@ -158,7 +158,7 @@ color_t RGBFadeAnimation::fade()
 
 //return time until next. if opened with time_delta == 0, update to next step.
 // this way it can be used with interrupts
-uint8_t RGBFadeAnimation::Update(uint8_t time_delta)
+uint8_t RGBFadeAnimation::update(uint8_t time_delta)
 {
     printf("updating fade\n");
 
@@ -202,3 +202,38 @@ uint8_t RGBFadeAnimation::Update(uint8_t time_delta)
     }
     return time_min_delta_;
 };
+
+RGBAnimator::animate(uint8_t time_delta)
+{
+    if(!b_running)
+    {
+        if(RGBTaskList.empty())
+        {
+            time_delta_next = 0;
+        }
+        else
+        {
+            // hier ein while time_delta_next == 0
+            // fetch new
+            if(time_delta_next > 0)
+            {
+                // already active animation going opened
+                time_delta_next = rgb_animation->update(time_delta);
+            }
+            else
+            {
+                // get new animation from queue
+                rgb_animation = RGBTaskList.begin()->GetAnimation();
+                // similar code as above case...?
+                time_delta_next = rgb_animation->update(time_delta);
+            }
+
+            if(time_delta_next==0)
+            {
+                // after current update still zero means animation has finished
+                // dispose of current
+                // fetch new!
+            }
+        }
+    }
+}

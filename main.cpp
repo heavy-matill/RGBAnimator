@@ -24,7 +24,7 @@ int main()
     animor.RGBTaskList.push_back(flt1);  
     RGBTask* task = *animor.RGBTaskList.begin();
     RGBAnimation* anim = task->GetAnimation();
-    while(anim->Update(20))
+    while(anim->update(20))
     {
         paint_col(anim->color_current);    
         //printf("%f, %u", anim->fac_progress_, anim->num_rep_progress);

@@ -221,24 +221,24 @@ uint8_t RGBAnimator::animate(uint8_t time_delta)
     }
     else
     {
-        if(RGBTaskList.empty())
+        // if previous animation has not stopped
+        if(time_delta_next == 0)
         {
-            // queue is empty
-            time_delta_next = 0;
-            return 0;
-        }
-        else
-        {
-            // if previous animation has not stopped
-            if(time_delta_next == 0)
+            if(RGBTaskList.empty())
+            {
+                // queue is empty
+                time_delta_next = 0;
+                return 0;
+            }
+            else
             {
                 // get new animation from queue
                 this->get_animation();
             }
-            // update current animation
-            time_delta_next = rgb_animation->update(time_delta);
-            return time_delta_next;
-        }
+        }            
+        // update current animation
+        time_delta_next = rgb_animation->update(time_delta);
+        return time_delta_next;
     }
 }
 
@@ -274,4 +274,9 @@ RGBTask* RGBAnimator::pop_task_virt()
     RGBTask* rgb_task = *this->RGBTaskList.begin();
     this->RGBTaskList.pop_front();
     return  rgb_task;
+}
+
+color_t RGBAnimator::color_current()
+{
+    return rgb_animation->color_current;
 }

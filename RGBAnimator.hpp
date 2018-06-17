@@ -135,6 +135,7 @@ class RGBAnimator
     void queue_task(RGBTask *task);
     RGBTask* pop_task_virt();
     uint8_t time_delta_next;
+    color_t color_current();
 
     //void SetValue(color_t color_set);
     //void ChangeBrightness(int8_t change_brightness = 10);

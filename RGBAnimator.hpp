@@ -56,7 +56,7 @@ class RGBTask
     bool b_repeat;
     uint16_t time_duration;
     virtual RGBAnimation* GetAnimation() = 0;
-    //virtual RGBTask();
+    //virtual RGBTask_virt();
     virtual ~RGBTask();
 };
 
@@ -90,6 +90,7 @@ class RGBAnimation
     uint16_t time_progress_;   
     uint8_t num_rep_progress;
     float fac_progress_;
+    virtual RGBTask* task_virt() = 0;
     //uint8_t time_duration_; //
     //color_t color_from_; //
     //color_t color_to_;  //
@@ -105,6 +106,7 @@ class RGBFlashAnimation : public RGBAnimation//, public RGBFlashTask
     ~RGBFlashAnimation();
     uint8_t num_repetitions;
     RGBFlashTask *task;
+    RGBTask* task_virt();
     uint8_t update(uint8_t time_delta);
 };
 
@@ -113,6 +115,7 @@ class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
   public:
     uint8_t time_min_delta_;
     RGBFadeTask *task;
+    RGBTask* task_virt();
     RGBFadeAnimation(RGBFadeTask* task_new);
     ~RGBFadeAnimation();
     uint8_t update(uint8_t time_delta);
@@ -128,7 +131,10 @@ class RGBAnimator
     uint8_t brightness;
     uint8_t speed;
     uint8_t animate(uint8_t time_delta);
-    uint8_t time_old_delta;
+    void get_animation();
+    void queue_task(RGBTask *task);
+    RGBTask* pop_task_virt();
+    uint8_t time_delta_next;
 
     //void SetValue(color_t color_set);
     //void ChangeBrightness(int8_t change_brightness = 10);

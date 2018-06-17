@@ -20,8 +20,8 @@ int main()
     RGBFlashTask* flt1 = new RGBFlashTask(color_t(0,255,0), color_t(255,0,100),1000,50,4,false);
     print_col(fdt1->color_from);
     print_col(fdt1->color_to);
-    //animor.RGBTaskList.push_back(fdt1);  
-    animor.RGBTaskList.push_back(flt1);  
+    animor.RGBTaskList.push_back(fdt1);  
+    //animor.RGBTaskList.push_back(flt1);  
     RGBTask* task = *animor.RGBTaskList.begin();
     RGBAnimation* anim = task->GetAnimation();
     while(anim->update(20))

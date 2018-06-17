@@ -54,7 +54,7 @@ RGBAnimation::~RGBAnimation()
 RGBAnimation* RGBFlashTask::GetAnimation()
 {
     printf("getting flash animation pointer\n");
-    RGBAnimation* rgb_animation_ptr =  new RGBFlashAnimation(this);
+    RGBAnimation* rgb_animation_ptr = new RGBFlashAnimation(this);
     return rgb_animation_ptr;
 };
 
@@ -83,6 +83,14 @@ RGBFlashAnimation::~RGBFlashAnimation()
 
 };
 
+RGBTask* RGBFlashAnimation::task_virt()
+{
+    return this->task;
+}
+RGBTask* RGBFadeAnimation::task_virt()
+{
+    return this->task;
+}
 uint8_t RGBFlashAnimation::update(uint8_t time_delta)
 {
     printf("updating flash\n");
@@ -203,37 +211,67 @@ uint8_t RGBFadeAnimation::update(uint8_t time_delta)
     return time_min_delta_;
 };
 
-RGBAnimator::animate(uint8_t time_delta)
+uint8_t RGBAnimator::animate(uint8_t time_delta)
 {
     if(!b_running)
     {
+        // return zero so that the user knows that there is nothing to wait for
+        // but dont reset time_delta_next so you can continue after setting b_running to true
+        return 0;
+    }
+    else
+    {
         if(RGBTaskList.empty())
         {
+            // queue is empty
             time_delta_next = 0;
+            return 0;
         }
         else
         {
-            // hier ein while time_delta_next == 0
-            // fetch new
-            if(time_delta_next > 0)
-            {
-                // already active animation going opened
-                time_delta_next = rgb_animation->update(time_delta);
-            }
-            else
+            // if previous animation has not stopped
+            if(time_delta_next == 0)
             {
                 // get new animation from queue
-                rgb_animation = RGBTaskList.begin()->GetAnimation();
-                // similar code as above case...?
-                time_delta_next = rgb_animation->update(time_delta);
+                this->get_animation();
             }
-
-            if(time_delta_next==0)
-            {
-                // after current update still zero means animation has finished
-                // dispose of current
-                // fetch new!
-            }
+            // update current animation
+            time_delta_next = rgb_animation->update(time_delta);
+            return time_delta_next;
         }
     }
+}
+
+void RGBAnimator::get_animation()
+{
+    // check if previous animation exists
+    if(rgb_animation)
+    {        
+        // check if animation has to be repeated
+        if(rgb_animation->task_virt()->b_repeat)
+        {
+            // queue task again
+            this->queue_task(rgb_animation->task_virt());
+        }
+        else
+        {
+            delete rgb_animation->task_virt();
+        }
+        // delete old animation
+        delete rgb_animation;
+    }    
+    // create new animation from task
+    rgb_animation = this->pop_task_virt()->GetAnimation();
+}
+
+void RGBAnimator::queue_task(RGBTask* task)
+{     
+    this->RGBTaskList.push_back(task);  
+}
+
+RGBTask* RGBAnimator::pop_task_virt()
+{
+    RGBTask* rgb_task = *this->RGBTaskList.begin();
+    this->RGBTaskList.pop_front();
+    return  rgb_task;
 }

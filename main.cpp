@@ -19,12 +19,12 @@ int main()
     animor.time_delta_next = 0;
     animor.rgb_animation = 0;
 
-    RGBFadeTask* fdt1 = new RGBFadeTask(color_t(0,255,0), color_t(255,0,100),1255,4,false);
-    RGBFlashTask* flt1 = new RGBFlashTask(color_t(0,255,0), color_t(255,0,100),1000,50,4,false);
+    RGBFadeTask* fdt1 = new RGBFadeTask(color_t(0,255,0), color_t(255,0,100),200,2,true);
+    RGBFlashTask* flt1 = new RGBFlashTask(color_t(0,255,0), color_t(255,0,100),200,50,2,true);
     print_col(fdt1->color_from);
     print_col(fdt1->color_to);
     animor.queue_task(flt1); 
-    animor.queue_task(fdt1);  
+    //animor.queue_task(fdt1);  
     animor.animate(20);
     paint_col(animor.color_current()); 
     //printf("%u", animor.rgb_animation);

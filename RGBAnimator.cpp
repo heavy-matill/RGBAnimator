@@ -224,7 +224,7 @@ uint8_t RGBAnimator::animate(uint8_t time_delta)
         // if previous animation has not stopped
         if(time_delta_next == 0)
         {
-            if(RGBTaskList.empty())
+            if(RGBTaskList.empty()&&!this->rgb_animation->task_virt()->b_repeat)
             {
                 // queue is empty
                 time_delta_next = 0;
@@ -252,6 +252,7 @@ void RGBAnimator::get_animation()
         {
             // queue task again
             this->queue_task(rgb_animation->task_virt());
+            b_running=1;
         }
         else
         {

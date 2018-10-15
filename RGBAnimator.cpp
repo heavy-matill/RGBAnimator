@@ -183,11 +183,11 @@ uint8_t RGBFadeAnimation::update(uint8_t time_delta)
         color_current = task->color_to;
         //reduce repetitions
         num_rep_progress--;
+        //switch color
+        task->color_to = task->color_from;
+        task->color_from = color_current;
         if(num_rep_progress>0)
         {   
-            //switch color
-            task->color_to = task->color_from;
-            task->color_from = color_current;
             //reset progress
             if(time_progress_>task->time_duration)
             {
@@ -224,7 +224,7 @@ uint8_t RGBAnimator::animate(uint8_t time_delta)
         // if previous animation has not stopped
         if(time_delta_next == 0)
         {
-            if(RGBTaskList.empty()&&!this->rgb_animation->task_virt()->b_repeat)
+            if((RGBTaskList.size()==0)&&!this->rgb_animation->task_virt()->b_repeat)
             {
                 // queue is empty
                 time_delta_next = 0;
@@ -267,13 +267,12 @@ void RGBAnimator::get_animation()
 
 void RGBAnimator::queue_task(RGBTask* task)
 {     
-    this->RGBTaskList.push_back(task);  
+    this->RGBTaskList.add(task);  
 }
 
 RGBTask* RGBAnimator::pop_task_virt()
 {
-    RGBTask* rgb_task = *this->RGBTaskList.begin();
-    this->RGBTaskList.pop_front();
+    RGBTask* rgb_task = this->RGBTaskList.shift();
     return  rgb_task;
 }
 

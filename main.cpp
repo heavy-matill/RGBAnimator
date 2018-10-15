@@ -23,8 +23,8 @@ int main()
     RGBFlashTask* flt1 = new RGBFlashTask(color_t(0,255,0), color_t(255,0,100),200,50,2,true);
     print_col(fdt1->color_from);
     print_col(fdt1->color_to);
-    animor.queue_task(flt1); 
-    //animor.queue_task(fdt1);  
+    //animor.queue_task(flt1); 
+    animor.queue_task(fdt1);  
     animor.animate(20);
     paint_col(animor.color_current()); 
     //printf("%u", animor.rgb_animation);

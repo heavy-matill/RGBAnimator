@@ -10,7 +10,7 @@
 #endif
 
 
-#include <list>
+#include <SimpleList.h>
 
 
 #define MIN( a, b ) ((a < b) ? a : b)
@@ -148,7 +148,7 @@ class RGBAnimator
 
     //void DataAvailable(uint8_t datChar);
     //void ResetDatCount();
-    std::list<RGBTask*> RGBTaskList;
+    SimpleList<RGBTask*> RGBTaskList;
 };
 
 

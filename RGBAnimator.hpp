@@ -122,7 +122,11 @@ struct RGBTaskNode
 {
 	RGBTask *task;
 	RGBTaskNode *next;
-
+  RGBTaskNode()
+  {
+    task = NULL;
+    next = NULL;
+  }
 };	
 
 class RGBTaskList
@@ -137,22 +141,22 @@ class RGBTaskList
 	}
 	void push(RGBTask *task)
 	{
-		RGBTaskNode *temp=new RGBTaskNode;
+		RGBTaskNode *temp=new RGBTaskNode();
 		temp->task=task;
     if(head==NULL)
     {
-      head = tail = temp;
+      head = temp;
+      tail = temp;
     }
     else
     {
-      tail->next=temp;
-      tail=temp;
-      tail->next=NULL;
+      tail->next = temp;
+      tail = temp;
     }
 	}
 	RGBTask *pop()
 	{
-		RGBTaskNode *temp=new RGBTaskNode;
+		RGBTaskNode *temp=new RGBTaskNode();
 		temp=head;
 		head=head->next;
 		RGBTask *task = temp->task;
@@ -165,12 +169,16 @@ class RGBTaskList
 	}
   int size()
 	{
-    RGBTaskNode *temp = head;
+    RGBTaskNode *temp=head;
     int count = 0;
-		while(temp!=tail)
+    if(head!=NULL)
     {
       count++;
-      temp=temp->next;
+      while(temp!=tail)
+      {
+        count++;
+        temp=temp->next;
+      }
     }
     return count;
 	}

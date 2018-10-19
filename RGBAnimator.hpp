@@ -9,10 +9,6 @@
     #define TIME_MAX_DELTA 255
 #endif
 
-
-#include <SimpleList.h>
-
-
 #define MIN( a, b ) ((a < b) ? a : b)
 #define MAX( a, b ) ((a > b) ? a : b)
 #define LIM( t ) (MAX(TIME_MIN_DELTA,MIN(TIME_MAX_DELTA, t )))
@@ -79,7 +75,6 @@ class RGBFlashTask : public RGBTask
     ~RGBFlashTask();
 };
 
-
 class RGBAnimation
 {
   public:
@@ -123,6 +118,64 @@ class RGBFadeAnimation : public RGBAnimation//, public RGBFadeTask
     color_t fade();
 };
 
+struct RGBTaskNode
+{
+	RGBTask *task;
+	RGBTaskNode *next;
+
+};	
+
+class RGBTaskList
+{
+	private:
+	RGBTaskNode *head, *tail;
+	public:
+	RGBTaskList()
+	{
+		head=NULL;
+		tail=NULL;
+	}
+	void push(RGBTask *task)
+	{
+		RGBTaskNode *temp=new RGBTaskNode;
+		temp->task=task;
+    if(head==NULL)
+    {
+      head = tail = temp;
+    }
+    else
+    {
+      tail->next=temp;
+      tail=temp;
+      tail->next=NULL;
+    }
+	}
+	RGBTask *pop()
+	{
+		RGBTaskNode *temp=new RGBTaskNode;
+		temp=head;
+		head=head->next;
+		RGBTask *task = temp->task;
+		delete temp;
+		return task;
+	}
+  bool empty()
+	{
+		return head==NULL;
+	}
+  int size()
+	{
+    RGBTaskNode *temp = head;
+    int count = 0;
+		while(temp!=tail)
+    {
+      count++;
+      temp=temp->next;
+    }
+    return count;
+	}
+};	
+
 class RGBAnimator
 {
   public:
@@ -148,10 +201,7 @@ class RGBAnimator
 
     //void DataAvailable(uint8_t datChar);
     //void ResetDatCount();
-    SimpleList<RGBTask*> RGBTaskList;
+    RGBTaskList task_list;
 };
-
-
-
 
 #endif // RGBANIMATOR_H_

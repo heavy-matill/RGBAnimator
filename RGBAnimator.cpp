@@ -224,7 +224,7 @@ uint8_t RGBAnimator::animate(uint8_t time_delta)
         // if previous animation has not stopped
         if(time_delta_next == 0)
         {
-            if((RGBTaskList.size()==0)&&!this->rgb_animation->task_virt()->b_repeat)
+            if(task_list.empty()&&!this->rgb_animation->task_virt()->b_repeat)
             {
                 // queue is empty
                 time_delta_next = 0;
@@ -267,12 +267,12 @@ void RGBAnimator::get_animation()
 
 void RGBAnimator::queue_task(RGBTask* task)
 {     
-    this->RGBTaskList.add(task);  
+    this->task_list.push(task);  
 }
 
 RGBTask* RGBAnimator::pop_task_virt()
 {
-    RGBTask* rgb_task = this->RGBTaskList.shift();
+    RGBTask* rgb_task = this->task_list.pop();
     return  rgb_task;
 }
 

@@ -27,6 +27,7 @@ int main()
     animor.queue_task(fdt1);  
     animor.animate(20);
     paint_col(animor.color_current()); 
+    printf("%u", animor.task_list.size());
     //printf("%u", animor.rgb_animation);
     //animor.rgb_animation = animor.pop_task_virt()->GetAnimation();   
     //animor.RGBTaskList.push_back(flt1);  
@@ -36,7 +37,7 @@ int main()
     {
         animor.animate(20);
         paint_col(animor.color_current());    
-        printf("%u", animor.RGBTaskList.size());
+        printf("%u", animor.task_list.size());
         //printf("%f, %u", anim->fac_progress_, anim->num_rep_progress);
         usleep(20000);
     }

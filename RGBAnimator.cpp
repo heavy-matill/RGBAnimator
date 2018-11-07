@@ -339,137 +339,131 @@ bool RGBAnimator::running()
 void RGBAnimator::process_data(uint8_t dat_char)
 {
 	if(!dat_count)
-	{ //first received symbol
-		switch(dat_char)
+    {
+        if(dat_char<=0x09)
         {
-			case 0x01: //new jump to color
-				data[0] = 0x01;
-				dat_count = 1;
-				break;			
-			case 0x02: //new slide to color
-				data[0] = 0x02;
-				dat_count = 1;
-				break;             
-            case 0x03: //new flash in color 
-				data[0] = 0x03;
-				dat_count = 1;           
-				break;             
-            case 0x04: //faster
-				//Faster(100);
-				//Serial.println("faster");
-				break;
-            case 0x05: //slower
-				//Slower(100);
-				break;
-            case 0x06: //speedPercent
-				dat_count = 1;
-				break;
-            case 0x07: //stop and clear
-				stop();		
-				clear_list();
-				break;
-            case 0x08: //pause
-				pause();
-				break;
-            case 0x09: //resume
-				start();			
-				break;             
-            case 0x0A: //immediately setColor
-				data[0] = 0x0A;
-				dat_count = 1;
-				break;
-			case 0x0B: //immediately slideColor
-				data[0] = 0x0B;
-				dat_count = 1;
-				break;	
-			case 0x0C: //set Brightness uint8_t 0-100;
-				data[0] = 0x0C;
-				dat_count = 1;
-				break;	
-			case 0x0D: //change Brightness int8_t -100..+100;
-				data[0] = 0x0D;
-				dat_count = 1;
-				break;		
-			case 0x0E: //white brightness
-				data[0] = 0x0E;
-				dat_count = 1;
-				break;
-		}
-	}
-	else
-    {         
-        data[dat_count] = dat_char;
-        dat_count++;
-		if(dat_count==4&&data[0]==0x0A) //set color
+            // valid startbyte for immediate commands
+            switch(dat_char)
+            {
+                case 0x00: // start/resume
+                    start();
+                    break;			
+                case 0x01: // stop
+                    stop();
+                    break;			
+                case 0x02: // pause
+                    pause();
+                    break;             
+                case 0x03: // faster
+                    //faster();          
+                    break;             
+                case 0x04: // slower
+                    //slower();
+                    break;
+                case 0x05: // brighter
+                    //brighter();
+                    break;
+                case 0x06: // darker
+                    //darker();
+                    break;		
+                case 0x07: // white
+                    stop();
+                    set_color(color_t(255, 255, 255)); // wharm white?
+                    break;	
+                case 0x08: // warm white on
+                    //stop();
+                    //set_color(color_t(255, 255, 255)); // wharm white?
+                    break;		
+                case 0x09: // warm white off
+                    //stop();
+                    //set_color(color_t(255, 255, 255)); // wharm white?
+                    break;	
+            }		
+        }
+        else if(dat_char>=0x10 && dat_char<=0x15)
         {
-            stop();
-            set_color(color_t(data[1], data[2], data[3]));
-			dat_count=0;
+            // valid startbyte for longer commands
+            data[0] = dat_char;
+            dat_count++;
         }
-        if(dat_count==4&&data[0]==0x0B) //fade now
+        else
         {
-            color_t cur = color_current();
-            stop();
-            add_fade(cur, //color_from
-                color_t(data[1], data[2], data[3]), //color_to
-                2000, //time_duration
-                1, //num_repetitions
-                false); //b_repeat
-            dat_count=0;
-            start();
+            // unknown startbyte for commands
         }
-        if(dat_count==4&&data[0]==0x01)//add jump to color
-        {      
-            add_flash(color_current(), //color_from
-                color_t(data[1], data[2], data[3]), //color_to
-                100, //time_duration
-                0, //perc_on
-                1, //num_repetitions
-                false); //b_repeat
-            dat_count = 0;
-        }
-        if(dat_count==11&&data[0]==0x02)//add fade to color
+    }
+    else // not first byte
+    {
+        // further bytes of longer commands
+        data[dat_count++] = dat_char;
+        if(dat_count==4)
         {
-            add_fade(color_t(data[1], data[2], data[3]), //color_from
-                color_t(data[4], data[5], data[6]), //color_to
-                (uint16_t)(data[7] << 8) + data[8], //time_duration
-                (uint8_t)data[9], //num_repetitions
-                (bool)data[10]); //b_repeat
-            dat_count = 0;
+            switch(data[0])
+            {
+                case 0x10: // jump to color
+                    stop();
+                    set_color(color_t(data[1], data[2], data[3]));
+                    dat_count = 0;
+                    break;
+                case 0x11: // fade to color
+                    stop();
+                    add_fade(color_current(), //color_from
+                        color_t(data[1], data[2], data[3]), //color_to
+                        2000, //time_duration
+                        1, //num_repetitions
+                        false); //b_repeat
+                    start();
+                    dat_count = 0;
+                    break;
+                case 0x12: // flash in color
+                    stop();
+                    add_fade(color_t(0,0,0), //color_from
+                        color_t(data[1], data[2], data[3]), //color_to
+                        100, //time_duration
+                        2, //num_repetitions
+                        true); //b_repeat
+                    start();
+                    dat_count = 0;
+                    break;
+                case 0x13: // pulse in color
+                    stop();
+                    add_fade(color_t(0,0,0), //color_from
+                        color_t(data[1], data[2], data[3]), //color_to
+                        1000, //time_duration
+                        2, //num_repetitions
+                        true); //b_repeat
+                    start();
+                    dat_count = 0;
+                    break;
+            }		
         }
-        if(dat_count==12&&data[0]==0x03)//add flash in color
+        else if(dat_count==11)
         {
-			//Serial.println("New Flash");
-            add_flash(color_t(data[1], data[2], data[3]), //color_from
-                color_t(data[4], data[5], data[6]), //color_to
-                (uint16_t)(data[7] << 8) + data[8], //time_duration
-                (uint8_t)data[9], //perc_on
-                (uint8_t)data[10], //num_repetitions
-                (bool)data[11]); //b_repeat
-            dat_count = 0;
+            switch(data[0])
+            {
+                case 0x14: // queue fade color
+                    add_fade(color_t(data[1], data[2], data[3]), //color_from
+                        color_t(data[4], data[5], data[6]), //color_to
+                        (uint16_t)(data[7] << 8) + data[8], //time_duration
+                        (uint8_t)data[9], //num_repetitions
+                        (bool)data[10]); //b_repeat
+                    dat_count = 0;
+                    break;
+            }			
         }
-        if(dat_count==2&&data[0]==0x06)
-        {            
-			//SpeedPercent(data[1]-100);
-			dat_count=0;
+        else if(dat_count==12)
+        {
+            switch(data[0])
+            {
+                case 0x15: // jump to color
+                    add_flash(color_t(data[1], data[2], data[3]), //color_from
+                        color_t(data[4], data[5], data[6]), //color_to
+                        (uint16_t)(data[7] << 8) + data[8], //time_duration
+                        (uint8_t)data[9], //perc_on
+                        (uint8_t)data[10], //num_repetitions
+                        (bool)data[11]); //b_repeat
+                    dat_count = 0;
+                    break;
+            }				
         }
-        if(dat_count==2&&data[0]==0x0C)
-        {            
-			//SetBrightness(data[1]);
-			dat_count=0;
-        }
-        if(dat_count==2&&data[0]==0x0D)
-        {            
-			//ChangeBrightness(data[1]-100);
-			dat_count=0;
-        }
-        if(dat_count==2&&data[0]==0x0E)
-        {            
-			//if(pwm_pin_w_)
-			//	pwm_pin_w_ = data[1];
-			dat_count=0;
-        }
-		if(dat_count>12)
-			dat_count=0;
     }
 }

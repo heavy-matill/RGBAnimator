@@ -14,6 +14,9 @@
 #define LIM( t ) (MAX(TIME_MIN_DELTA,MIN(TIME_MAX_DELTA, t )))
 #define POSDIFF( a, b ) ((a > b) ? a - b : b - a)
 
+#include <stdint.h>
+#include <stddef.h>
+
 class RGBAnimation;
 class RGBTask;
 
@@ -132,8 +135,9 @@ struct RGBTaskNode
 class RGBTaskList
 {
 	private:
-	RGBTaskNode *head, *tail;
+  
 	public:
+	RGBTaskNode *head, *tail;
 	RGBTaskList()
 	{
 		head=NULL;
@@ -186,9 +190,12 @@ class RGBTaskList
 
 class RGBAnimator
 {
+  private:  
+    bool b_running = true;
+    uint8_t data[11];
+    uint8_t dat_count;
   public:
     RGBAnimation* rgb_animation;
-    bool b_running;
     uint8_t brightness;
     uint8_t speed;
     uint8_t animate(uint8_t time_delta);
@@ -198,14 +205,21 @@ class RGBAnimator
     uint8_t time_delta_next;
     color_t color_current();
 
-    //void SetValue(color_t color_set);
+    void set_color(color_t color_to_new);
     //void ChangeBrightness(int8_t change_brightness = 10);
     //void ChangeSpeed(int8_t change_speed = 10);
-    //void Stop();
+    void stop();
+    void pause();
+    void start();
 
+    void add_flash(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, uint8_t perc_on_new, uint8_t num_repetitions_new, bool b_repeat_new);
+    void add_fade(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, uint8_t num_repetitions_new, bool b_repeat_new);
     //void PopAnimation();
-    //void ClearList();
-    //bool ListIsEmpty();
+    void clear_list();
+    bool list_empty();
+    bool running();
+
+    void process_data(uint8_t datChar);
 
     //void DataAvailable(uint8_t datChar);
     //void ResetDatCount();

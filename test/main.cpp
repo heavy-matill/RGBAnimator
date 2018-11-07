@@ -1,6 +1,6 @@
 
 #include <iostream>
-#include "RGBAnimator.cpp"
+#include "../RGBAnimator.cpp"
 #include <unistd.h>
 #define PAINT_RESOLUTION 16
 
@@ -15,15 +15,14 @@ int main()
     cout<<"Hello World\n";
 
     RGBAnimator animor;
-    animor.b_running = true;
     animor.time_delta_next = 0;
     animor.rgb_animation = 0;
 
-    RGBFadeTask* fdt1 = new RGBFadeTask(color_t(0,255,0), color_t(255,0,100),200,2,true);
+    RGBFadeTask* fdt1 = new RGBFadeTask(color_t(0,255,0), color_t(255,0,100),200,8,true);
     RGBFlashTask* flt1 = new RGBFlashTask(color_t(0,255,0), color_t(255,0,100),200,50,2,true);
     print_col(fdt1->color_from);
     print_col(fdt1->color_to);
-    //animor.queue_task(flt1); 
+    animor.queue_task(flt1); 
     animor.queue_task(fdt1);  
     animor.animate(20);
     paint_col(animor.color_current()); 

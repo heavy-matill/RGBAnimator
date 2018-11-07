@@ -405,8 +405,10 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     dat_count = 0;
                     break;
                 case 0x11: // fade to color
+                {
+                    color_t col_temp = color_current();
                     stop();
-                    add_fade(color_current(), //color_from
+                    add_fade(col_temp, //color_from
                         color_t(data[1], data[2], data[3]), //color_to
                         2000, //time_duration
                         1, //num_repetitions
@@ -414,6 +416,7 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     start();
                     dat_count = 0;
                     break;
+                }
                 case 0x12: // flash in color
                     stop();
                     add_fade(color_t(0,0,0), //color_from

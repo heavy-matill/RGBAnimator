@@ -15,17 +15,17 @@ int main()
     cout<<"Hello World\n";
 
     RGBAnimator animor;
-    animor.time_delta_next = 0;
-    animor.rgb_animation = 0;
 
-    RGBFadeTask* fdt1 = new RGBFadeTask(color_t(0,255,0), color_t(255,0,100),200,8,true);
-    RGBFlashTask* flt1 = new RGBFlashTask(color_t(0,255,0), color_t(255,0,100),200,50,2,true);
+    RGBFadeTask* fdt1 = new RGBFadeTask(color_t(0,255,0), color_t(255,0,100),200,1,true);
+    RGBFlashTask* flt1 = new RGBFlashTask(color_t(0,255,0), color_t(255,0,100),20,9,2,true);
     print_col(fdt1->color_from);
     print_col(fdt1->color_to);
     animor.queue_task(flt1); 
     animor.queue_task(fdt1);  
+    animor.start();
     animor.animate(20);
-    paint_col(animor.color_current()); 
+    //animor.rgb_animation = fdt1->GetAnimation();
+    paint_col(animor.get_color_current()); 
     printf("%u", animor.task_list.size());
     //printf("%u", animor.rgb_animation);
     //animor.rgb_animation = animor.pop_task_virt()->GetAnimation();   
@@ -34,11 +34,11 @@ int main()
     //RGBAnimation* anim = task->GetAnimation();
     while(1)
     {
-        animor.animate(20);
-        paint_col(animor.color_current());    
+        animor.animate(2);
+        paint_col(animor.get_color_current());    
         printf("%u", animor.task_list.size());
         //printf("%f, %u", anim->fac_progress_, anim->num_rep_progress);
-        usleep(20000);
+        usleep(200000);
     }
     //paint_rgb(200, 50, 100);
     getchar();

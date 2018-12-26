@@ -213,8 +213,12 @@ uint8_t RGBFadeAnimation::update(uint8_t time_delta)
 
 uint8_t RGBAnimator::animate(uint8_t time_delta)
 {
-    if(!b_running)
-    {
+    if(!rgb_animation){
+        if(!task_list.empty()){
+            this->get_animation();
+        }
+    }
+    if(b_running == 0){
         // return zero so that the user knows that there is nothing to wait for
         // but dont reset time_delta_next so you can continue after setting b_running to true
         return 0;
@@ -276,9 +280,13 @@ RGBTask* RGBAnimator::pop_task_virt()
     return  rgb_task;
 }
 
-color_t RGBAnimator::color_current()
+color_t RGBAnimator::get_color_current()
 {
-    return rgb_animation->color_current;
+    if(rgb_animation){
+        return rgb_animation->color_current;
+    }else{
+        return color_t(0,0,0);
+    }
 }
 
 void RGBAnimator::set_color(color_t color_to_new)
@@ -382,13 +390,12 @@ void RGBAnimator::process_data(uint8_t dat_char)
         }
         else if(dat_char>=0x10 && dat_char<=0x15)
         {
-            // valid startbyte for longer commands
-            data[0] = dat_char;
-            dat_count++;
+            // valid startbyte for longer commands, set first element of data
+            data[dat_count++] = dat_char;            
         }
         else
         {
-            // unknown startbyte for commands
+            // unknown startbyte for commands, dat_count stays at zero
         }
     }
     else // not first byte
@@ -406,7 +413,7 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     break;
                 case 0x11: // fade to color
                 {
-                    color_t col_temp = color_current();
+                    color_t col_temp = get_color_current();
                     stop();
                     add_fade(col_temp, //color_from
                         color_t(data[1], data[2], data[3]), //color_to
@@ -417,17 +424,18 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     dat_count = 0;
                     break;
                 }
-                case 0x12: // flash in color
+                case 0x12: // queue flash in color
                     stop();
-                    add_fade(color_t(0,0,0), //color_from
+                    add_flash(color_t(0,0,0), //color_from
                         color_t(data[1], data[2], data[3]), //color_to
                         100, //time_duration
+                        50, //perc_on
                         2, //num_repetitions
                         true); //b_repeat
                     start();
                     dat_count = 0;
                     break;
-                case 0x13: // pulse in color
+                case 0x13: // queue pulse in color
                     stop();
                     add_fade(color_t(0,0,0), //color_from
                         color_t(data[1], data[2], data[3]), //color_to
@@ -443,7 +451,7 @@ void RGBAnimator::process_data(uint8_t dat_char)
         {
             switch(data[0])
             {
-                case 0x14: // queue fade color
+                case 0x15: // queue fade color
                     add_fade(color_t(data[1], data[2], data[3]), //color_from
                         color_t(data[4], data[5], data[6]), //color_to
                         (uint16_t)(data[7] << 8) + data[8], //time_duration
@@ -457,7 +465,7 @@ void RGBAnimator::process_data(uint8_t dat_char)
         {
             switch(data[0])
             {
-                case 0x15: // jump to color
+                case 0x14: // queue jump between colors
                     add_flash(color_t(data[1], data[2], data[3]), //color_from
                         color_t(data[4], data[5], data[6]), //color_to
                         (uint16_t)(data[7] << 8) + data[8], //time_duration
@@ -466,7 +474,8 @@ void RGBAnimator::process_data(uint8_t dat_char)
                         (bool)data[11]); //b_repeat
                     dat_count = 0;
                     break;
-            }				
+            }	
+            dat_count = 0;			
         }
     }
 }

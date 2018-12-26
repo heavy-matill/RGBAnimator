@@ -191,19 +191,19 @@ class RGBTaskList
 class RGBAnimator
 {
   private:  
-    bool b_running = true;
+    bool b_running;
     uint8_t data[11];
     uint8_t dat_count;
   public:
-    RGBAnimation* rgb_animation;
+    RGBAnimation* rgb_animation = 0;
     uint8_t brightness;
     uint8_t speed;
     uint8_t animate(uint8_t time_delta);
     void get_animation();
     void queue_task(RGBTask *task);
     RGBTask* pop_task_virt();
-    uint8_t time_delta_next;
-    color_t color_current();
+    uint8_t time_delta_next = 0;
+    color_t get_color_current();
 
     void set_color(color_t color_to_new);
     //void ChangeBrightness(int8_t change_brightness = 10);

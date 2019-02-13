@@ -11,204 +11,106 @@ RGBTask::~RGBTask()
 
 };
 
-RGBFadeTask::RGBFadeTask()
+RGBTask::RGBTask()
 {
 
 };
-RGBFadeTask::RGBFadeTask(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, uint8_t num_repetitions_new, bool b_repeat_new)
+RGBTask::RGBTask(bool b_fade_new, color_t color_1_new, color_t color_2_new, uint16_t time_1_new, uint16_t time_2_new, uint8_t num_repetitions_new, bool b_repeat_new)
 {
-    color_from = color_from_new;
-    color_to = color_to_new;
-    time_duration = time_duration_new;
+    b_fade = b_fade_new;
+    color_1 = color_1_new;
+    color_2 = color_2_new;
+    time_1 = time_1_new;
+    time_2 = time_2_new;
     num_repetitions = num_repetitions_new;
     b_repeat = b_repeat_new;
-
-};    
-RGBFadeTask::~RGBFadeTask()
-{
-
-};
-
-RGBFlashTask::RGBFlashTask()
-{
-
-};
-RGBFlashTask::RGBFlashTask(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, uint8_t perc_on_new, uint8_t num_repetitions_new, bool b_repeat_new)
-{
-    color_from = color_from_new;
-    color_to = color_to_new;
-    time_duration = time_duration_new;
-    perc_on = MIN(100,perc_on_new);
-    num_repetitions = num_repetitions_new;
-    b_repeat = b_repeat_new;
-};
-RGBFlashTask::~RGBFlashTask()
-{
-
-};
+};  
 
 RGBAnimation::~RGBAnimation()
 {
+
 };
 
-RGBAnimation* RGBFlashTask::GetAnimation()
+RGBAnimation* RGBTask::GetAnimation()
 {
-    //printf("getting flash animation pointer\n");
-    RGBAnimation* rgb_animation_ptr = new RGBFlashAnimation(this);
+    RGBAnimation* rgb_animation_ptr = new RGBAnimation(this);
     return rgb_animation_ptr;
 };
 
-RGBAnimation* RGBFadeTask::GetAnimation()
+uint16_t RGBTask::time_sum()
 {
-    //printf("getting fade animation pointer\n");
-    RGBAnimation* rgb_animation_ptr = new RGBFadeAnimation(this);
-    return rgb_animation_ptr;
+    return this->time_1 + this->time_2;
 };
 
-/*virtual void RGBAnimation::update()
-{
-    printf("nothing to update");
-};*/
-
-
-RGBFlashAnimation::RGBFlashAnimation(RGBFlashTask* task_new)
+RGBAnimation::RGBAnimation(RGBTask *task_new)
 {
     task = task_new;
     num_rep_progress = task->num_repetitions;
-    time_progress_ = 0;
-    fac_progress_ = 0;
-};
-RGBFlashAnimation::~RGBFlashAnimation()
-{
-
+    time_left = task->time_1 + task->time_2;
+    time_min_delta = LIM((uint8_t)((float)task->time_2 / (float)task->color_2.maxDiff(task->color_1)));
 };
 
-RGBTask* RGBFlashAnimation::task_virt()
+uint8_t RGBAnimation::update(uint8_t time_delta)
 {
-    return this->task;
-}
-RGBTask* RGBFadeAnimation::task_virt()
-{
-    return this->task;
-}
-uint8_t RGBFlashAnimation::update(uint8_t time_delta)
-{
-    //printf("updating flash\n");
-    // skip reptitions?
-    if(time_delta>task->time_duration)
+    // check whether time_delta finishes this animation
+    while(time_left < time_delta)
     {
-        uint8_t delta_rep = time_delta/task->time_duration;
-        num_rep_progress -= MIN(num_rep_progress, time_delta/task->time_duration);
-        time_delta -= task->time_duration*delta_rep;
-    }
-    time_progress_ += time_delta;
-    fac_progress_ = (float)time_progress_/(float)task->time_duration;
-
-    if(fac_progress_>=1.0)
-    {        
-            num_rep_progress--;
-        // Flash finished
+        // this repetition of animation is finished
         if(num_rep_progress > 0)
-        {
-            // reset progress for next repetition
-            time_progress_ -= task->time_duration;
-        }
-        else
-        {
-            // no more flashes, stop
-            return 0;
-        }
-    }
-    if(fac_progress_*100 > task->perc_on) 
-    {
-        color_current = task->color_to;
-        return LIM(task->time_duration-time_progress_);
-        
-    }
-    else
-    {
-        color_current = task->color_from;
-        return LIM((float)task->time_duration/100.0*task->perc_on-time_progress_);
-    }
-};
-
-RGBFadeAnimation::RGBFadeAnimation(RGBFadeTask* task_new)
-{
-    task = task_new;
-    num_rep_progress = task->num_repetitions;
-    // Check if color hasn't changed
-    /*if (task->color_from==task->color_to) {
-        return 0;
-    }*/
-
-    // Fade duration is smaller than TIME_MIN_DELTA
-    /*if (task->time_duration <= TIME_MIN_DELTA) {
-        color_current = task->color_to;
-        return;
-    }*/
-    time_progress_ = 0;
-    fac_progress_ = 0;
-    time_min_delta_ = LIM((uint8_t)((float)task->time_duration/(float)task->color_to.maxDiff(task->color_from)));
-    // MIN TIME_MAX_DELTA ?
-};
-RGBFadeAnimation::~RGBFadeAnimation()
-{
-
-};
-
-color_t RGBFadeAnimation::fade()
-{   
-    int color_diff_r = task->color_to.R - task->color_from.R;
-    int color_diff_g = task->color_to.G - task->color_from.G;
-    int color_diff_b = task->color_to.B - task->color_from.B;;
-    return color_t(task->color_from.R+(int)(fac_progress_*color_diff_r), task->color_from.G+(int)(fac_progress_*color_diff_g), task->color_from.B+(int)(fac_progress_*color_diff_b));
-};
-
-//return time until next. if opened with time_delta == 0, update to next step.
-// this way it can be used with interrupts
-uint8_t RGBFadeAnimation::update(uint8_t time_delta)
-{
-    //printf("updating fade\n");
-
-    // Animation finished already
-    if(num_rep_progress==0||task->time_duration == 0)
-        return 0;
-    time_progress_ += time_delta;
-
-    // Get progress in percent since last update
-    fac_progress_ = (float)time_progress_/ (float)task->time_duration;
-
-    // If progress has reached 100%, set color to final target color
-    if (fac_progress_ >= 1) {
-        color_current = task->color_to;
-        //reduce repetitions
-        num_rep_progress--;
-        //switch color
-        task->color_to = task->color_from;
-        task->color_from = color_current;
-        if(num_rep_progress>0)
         {   
-            //reset progress
-            if(time_progress_>task->time_duration)
-            {
-                time_progress_ -= task->time_duration;
+            num_rep_progress--;
+            // switch task colors
+            if (task->b_fade){
+                color_current = task->color_2;
+                task->color_2 = task->color_1;
+                task->color_1 = color_current;
             }
-            else
-            {
-                time_progress_ = 0;
-            }
+            // reduce time_delta for next repetition
+            time_delta -= time_left;
+            // reset time_left for next repetition
+            time_left = task->time_sum();
         }
         else
         {
+            // switch task colors back if task is going to be repeated and has odd number of repetitions
+            if (task->b_fade && task->b_repeat && task->num_repetitions%2){
+                color_current = task->color_2;
+                task->color_2 = task->color_1;
+                task->color_1 = color_current;
+            }
+            // no more repetitions to be done, stop
             return 0;
         }
     }
-    else
-    {
-        // Calculate color  how it should be according to progress
-        color_current = fade();        
+
+    // reduce time_left by time_delta to show the animation progress in this repetition
+    time_left -= time_delta;
+
+    // decide which color to display
+    if (time_left > task->time_2) {
+        // first part of animation, set color accordingly
+        if (task->b_fade) {
+            // Calculate color how it should be according to progress
+            color_current = fade((float)(time_left - task->time_2) / (float)task->time_1);            
+            return time_min_delta;   
+        } else {
+            // set color
+            color_current = task->color_1;
+            return LIM(time_left - task->time_2);
+        }
+    } else {
+        // second part of animation, set color accordingly        
+        color_current = task->color_2;
+        return LIM(task->time_2 - time_left);
     }
-    return time_min_delta_;
+};
+
+color_t RGBAnimation::fade(float fac_progress)
+{   
+    float color_diff_r = task->color_1.R - task->color_2.R;
+    float color_diff_g = task->color_1.G - task->color_2.G;
+    float color_diff_b = task->color_1.B - task->color_2.B;
+    return color_t(task->color_1.R + (fac_progress * color_diff_r), task->color_1.G + (fac_progress * color_diff_g), task->color_1.B + (fac_progress * color_diff_b));
 };
 
 uint8_t RGBAnimator::animate(uint8_t time_delta)
@@ -228,7 +130,7 @@ uint8_t RGBAnimator::animate(uint8_t time_delta)
         // if previous animation has not stopped
         if(time_delta_next == 0)
         {
-            if(task_list.empty()&&!this->rgb_animation->task_virt()->b_repeat)
+            if(task_list.empty()&&!this->rgb_animation->task->b_repeat)
             {
                 // queue is empty
                 time_delta_next = 0;
@@ -252,15 +154,15 @@ void RGBAnimator::get_animation()
     if(rgb_animation)
     {        
         // check if animation has to be repeated
-        if(rgb_animation->task_virt()->b_repeat)
+        if(rgb_animation->task->b_repeat)
         {
             // queue task again
-            this->queue_task(rgb_animation->task_virt());
+            this->queue_task(rgb_animation->task);
             b_running=1;
         }
         else
         {
-            delete rgb_animation->task_virt();
+            delete rgb_animation->task;
         }
         // delete old animation
         delete rgb_animation;
@@ -289,9 +191,9 @@ color_t RGBAnimator::get_color_current()
     }
 }
 
-void RGBAnimator::set_color(color_t color_to_new)
+void RGBAnimator::set_color(color_t color_2_new)
 {
-    rgb_animation->color_current = color_to_new;
+    rgb_animation->color_current = color_2_new;
 }
 
 void RGBAnimator::pause()
@@ -301,8 +203,8 @@ void RGBAnimator::pause()
 void RGBAnimator::stop()
 {
     clear_list();
-    //rgb_animation->time_progress_ = rgb_animation->task_virt()->time_duration;
-    rgb_animation->task_virt()->b_repeat = false;
+    //rgb_animation->time_left = rgb_animation->task_virt()->time_duration;
+    rgb_animation->task->b_repeat = false;
     //rgb_animation->num_rep_progress = 1.0;
     rgb_animation->color_current = color_t(0,0,0);
     time_delta_next = 0;
@@ -321,16 +223,15 @@ void RGBAnimator::clear_list()
         task_list.pop();
     }    
 }
-
-void RGBAnimator::add_flash(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, uint8_t perc_on_new, uint8_t num_repetitions_new, bool b_repeat_new)
+void RGBAnimator::add_flash(color_t color_1_new, color_t color_2_new, uint16_t time_1_new, uint16_t time_2_new, uint8_t num_repetitions_new, bool b_repeat_new)
 {
-    RGBFlashTask* temp_task = new RGBFlashTask(color_from_new, color_to_new, time_duration_new, perc_on_new, num_repetitions_new, b_repeat_new);
+    RGBTask* temp_task = new RGBTask(false, color_1_new, color_2_new, time_1_new, time_2_new, num_repetitions_new, b_repeat_new);
     queue_task(temp_task); 
 }
 
-void RGBAnimator::add_fade(color_t color_from_new, color_t color_to_new, uint16_t time_duration_new, uint8_t num_repetitions_new, bool b_repeat_new)
+void RGBAnimator::add_fade(color_t color_1_new, color_t color_2_new, uint16_t time_1_new, uint16_t time_2_new, uint8_t num_repetitions_new, bool b_repeat_new)
 {
-    RGBFadeTask* temp_task = new RGBFadeTask(color_from_new, color_to_new, time_duration_new, num_repetitions_new, b_repeat_new);
+    RGBTask* temp_task = new RGBTask(true, color_1_new, color_2_new, time_1_new, time_2_new, num_repetitions_new, b_repeat_new);
     queue_task(temp_task); 
 }
 
@@ -415,9 +316,10 @@ void RGBAnimator::process_data(uint8_t dat_char)
                 {
                     color_t col_temp = get_color_current();
                     stop();
-                    add_fade(col_temp, //color_from
-                        color_t(data[1], data[2], data[3]), //color_to
+                    add_fade(col_temp, //color_1
+                        color_t(data[1], data[2], data[3]), //color_2
                         2000, //time_duration
+                        0,  //time_2
                         1, //num_repetitions
                         false); //b_repeat
                     start();
@@ -426,8 +328,8 @@ void RGBAnimator::process_data(uint8_t dat_char)
                 }
                 case 0x12: // queue flash in color
                     stop();
-                    add_flash(color_t(0,0,0), //color_from
-                        color_t(data[1], data[2], data[3]), //color_to
+                    add_flash(color_t(0,0,0), //color_1
+                        color_t(data[1], data[2], data[3]), //color_2
                         100, //time_duration
                         50, //perc_on
                         2, //num_repetitions
@@ -437,9 +339,10 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     break;
                 case 0x13: // queue pulse in color
                     stop();
-                    add_fade(color_t(0,0,0), //color_from
-                        color_t(data[1], data[2], data[3]), //color_to
+                    add_fade(color_t(0,0,0), //color_1
+                        color_t(data[1], data[2], data[3]), //color_2
                         1000, //time_duration
+                        0, // time_2
                         2, //num_repetitions
                         true); //b_repeat
                     start();
@@ -449,29 +352,31 @@ void RGBAnimator::process_data(uint8_t dat_char)
         }
         else if(dat_count==11)
         {
-            switch(data[0])
+            		switch(data[0])
             {
-                case 0x15: // queue fade color
-                    add_fade(color_t(data[1], data[2], data[3]), //color_from
-                        color_t(data[4], data[5], data[6]), //color_to
-                        (uint16_t)(data[7] << 8) + data[8], //time_duration
-                        (uint8_t)data[9], //num_repetitions
-                        (bool)data[10]); //b_repeat
-                    dat_count = 0;
-                    break;
-            }			
+                
+            }	
         }
-        else if(dat_count==12)
+        else if(dat_count==13)
         {
             switch(data[0])
             {
                 case 0x14: // queue jump between colors
-                    add_flash(color_t(data[1], data[2], data[3]), //color_from
-                        color_t(data[4], data[5], data[6]), //color_to
-                        (uint16_t)(data[7] << 8) + data[8], //time_duration
-                        (uint8_t)data[9], //perc_on
-                        (uint8_t)data[10], //num_repetitions
-                        (bool)data[11]); //b_repeat
+                    add_flash(color_t(data[1], data[2], data[3]), //color_1
+                        color_t(data[4], data[5], data[6]), //color_2
+                        (uint16_t)(data[7] << 8) + data[8], //time_1
+                        (uint16_t)(data[9] << 10) + data[8], //time_2
+                        (uint8_t)data[11], //num_repetitions
+                        (bool)data[12]); //b_repeat
+                    dat_count = 0;
+                    break;
+                case 0x15: // queue fade color
+                    add_fade(color_t(data[1], data[2], data[3]), //color_1
+                        color_t(data[4], data[5], data[6]), //color_2
+                        (uint16_t)(data[7] << 8) + data[8], //time_1
+                        (uint16_t)(data[9] << 10) + data[8], //time_2
+                        (uint8_t)data[11], //num_repetitions
+                        (bool)data[12]); //b_repeat
                     dat_count = 0;
                     break;
             }	

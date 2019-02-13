@@ -16,14 +16,10 @@ int main()
 
     RGBAnimator animor;
 
-    RGBFadeTask* fdt1 = new RGBFadeTask(color_t(0,255,0), color_t(255,0,100),200,1,true);
-    RGBFlashTask* flt1 = new RGBFlashTask(color_t(0,255,0), color_t(255,0,100),20,9,2,true);
-    print_col(fdt1->color_from);
-    print_col(fdt1->color_to);
-    animor.queue_task(flt1); 
-    animor.queue_task(fdt1);  
+    animor.add_fade(color_t(0,255,0), color_t(255,0,255),20,10,3,true);
+    animor.add_flash(color_t(0,255,0), color_t(255,0,100),10,10,2,true);
     animor.start();
-    animor.animate(20);
+    animor.animate(2);
     //animor.rgb_animation = fdt1->GetAnimation();
     paint_col(animor.get_color_current()); 
     printf("%u", animor.task_list.size());

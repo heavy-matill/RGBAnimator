@@ -1,11 +1,5 @@
 #include "RGBAnimator.hpp"
 
-/*virtual RGBAnimation RGBTask::GetAnimation()
-{
-    printf("nothing to get");
-    return 0;
-};*/
-
 RGBTask::~RGBTask()
 {
 
@@ -107,10 +101,10 @@ uint8_t RGBAnimation::update(uint8_t time_delta)
 
 color_t RGBAnimation::fade(float fac_progress)
 {   
-    float color_diff_r = task->color_1.R - task->color_2.R;
-    float color_diff_g = task->color_1.G - task->color_2.G;
-    float color_diff_b = task->color_1.B - task->color_2.B;
-    return color_t(task->color_1.R + (fac_progress * color_diff_r), task->color_1.G + (fac_progress * color_diff_g), task->color_1.B + (fac_progress * color_diff_b));
+    uint8_t color_r_new = fac_progress * task->color_1.R + (1 - fac_progress) * task->color_2.R;
+    uint8_t color_g_new = fac_progress * task->color_1.G + (1 - fac_progress) * task->color_2.G;
+    uint8_t color_b_new = fac_progress * task->color_1.B + (1 - fac_progress) * task->color_2.B;
+    return color_t(color_r_new, color_g_new, color_b_new);
 };
 
 uint8_t RGBAnimator::animate(uint8_t time_delta)

@@ -160,10 +160,12 @@ class RGBAnimator
     bool b_running;
     uint8_t data[12];
     uint8_t dat_count;
-  public:
-    RGBAnimation* rgb_animation = 0;
+    
     uint8_t brightness;
     uint8_t speed;
+
+  public:
+    RGBAnimation* rgb_animation = 0;
     uint8_t animate(uint8_t time_delta);
     void get_animation();
     void queue_task(RGBTask *task);
@@ -177,6 +179,9 @@ class RGBAnimator
     void stop();
     void pause();
     void start();
+    
+    void set_brightness(uint8_t brightness_new);
+    void set_speed(uint8_t speed_new);
 
     void add_flash(color_t color_1_new, color_t color_2_new, uint16_t time_1_new, uint16_t time_2_new, uint8_t num_repetitions_new, bool b_repeat_new);
     void add_fade(color_t color_1_new, color_t color_2_new, uint16_t time_1_new, uint16_t time_2_new, uint8_t num_repetitions_new, bool b_repeat_new);

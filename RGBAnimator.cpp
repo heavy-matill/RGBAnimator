@@ -135,9 +135,16 @@ uint8_t RGBAnimator::animate(uint8_t time_delta)
                 // get new animation from queue
                 this->get_animation();
             }
-        }            
-        // update current animation
-        time_delta_next = rgb_animation->update(time_delta);
+        }           
+        // modify according to speed
+        if(speed!=100) {
+            time_delta = LIM((uint8_t)(float)time_delta / 100.0 * (float) speed);
+            time_delta_next = rgb_animation->update(time_delta);
+            time_delta_next = LIM((uint8_t)(float)time_delta * 100.0 / (float) speed);
+        } else {
+            // update current animation
+            time_delta_next = rgb_animation->update(time_delta);
+        }
         return time_delta_next;
     }
 }
@@ -179,8 +186,17 @@ RGBTask* RGBAnimator::pop_task_virt()
 color_t RGBAnimator::get_color_current()
 {
     if(rgb_animation){
+        if(brightness != 100) {
+            // return reduced brightness color
+            float fac_brightness = (float) brightness/100.0;
+            return color_t((uint8_t)((float) rgb_animation->color_current.R * fac_brightness), \
+                (uint8_t)((float) rgb_animation->color_current.G * fac_brightness),\
+                (uint8_t)((float) rgb_animation->color_current.B * fac_brightness));
+        } 
+        // return full brightness color
         return rgb_animation->color_current;
-    }else{
+    } else {
+        // return black
         return color_t(0,0,0);
     }
 }
@@ -209,6 +225,16 @@ void RGBAnimator::start()
     b_running = true;
     animate(0);
 }
+
+void RGBAnimator::set_brightness(uint8_t brightness_new)
+{
+    rgb_animation->color_current = speed_new;
+}
+void RGBAnimator::set_speed(uint8_t speed_new)
+{
+    rgb_animation->color_current = speed_new;
+}
+
 
 void RGBAnimator::clear_list()
 {
@@ -273,17 +299,17 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     stop();
                     set_color(color_t(255, 255, 255)); // wharm white?
                     break;	
-                case 0x08: // warm white on
+                /*case 0x08: // set speed
                     //stop();
                     //set_color(color_t(255, 255, 255)); // wharm white?
                     break;		
-                case 0x09: // warm white off
+                case 0x09: // set brightness
                     //stop();
                     //set_color(color_t(255, 255, 255)); // wharm white?
-                    break;	
+                    break;*/	
             }		
         }
-        else if(dat_char>=0x10 && dat_char<=0x15)
+        else if(dat_char>=0x08 && dat_char<=0x15)
         {
             // valid startbyte for longer commands, set first element of data
             data[dat_count++] = dat_char;            
@@ -297,17 +323,25 @@ void RGBAnimator::process_data(uint8_t dat_char)
     {
         // further bytes of longer commands
         data[dat_count++] = dat_char;
-        if(dat_count==4)
-        {
-            switch(data[0])
-            {
+        
+        if(dat_count==1) {
+            switch(data[0]) {
+                case 0x08: // set brightness
+                    set_brightness(data[1]);
+                    break;
+                case 0x09: // set speed
+                    set_speed(data[1]);
+                    break;
+            }
+        }
+        else if(dat_count==4) {
+            switch(data[0]) {
                 case 0x10: // jump to color
                     stop();
                     set_color(color_t(data[1], data[2], data[3]));
                     dat_count = 0;
                     break;
                 case 0x11: // fade to color
-                {
                     color_t col_temp = get_color_current();
                     stop();
                     add_fade(col_temp, //color_1
@@ -319,7 +353,6 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     start();
                     dat_count = 0;
                     break;
-                }
                 case 0x12: // queue flash in color
                     stop();
                     add_flash(color_t(0,0,0), //color_1
@@ -344,17 +377,13 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     break;
             }		
         }
-        else if(dat_count==11)
-        {
-            		switch(data[0])
-            {
+        else if(dat_count==11) {
+            		switch(data[0]) {
                 
             }	
         }
-        else if(dat_count==13)
-        {
-            switch(data[0])
-            {
+        else if(dat_count==13) {
+            switch(data[0]) {
                 case 0x14: // queue jump between colors
                     add_flash(color_t(data[1], data[2], data[3]), //color_1
                         color_t(data[4], data[5], data[6]), //color_2

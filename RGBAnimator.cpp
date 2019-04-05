@@ -334,7 +334,7 @@ void RGBAnimator::process_data(uint8_t dat_char)
         // further bytes of longer commands
         data[dat_count++] = dat_char;
         
-        if(dat_count==1) {
+        if(dat_count==2) {
             switch(data[0]) {
                 case 0x08: // set brightness
                     set_brightness(data[1]);

@@ -161,8 +161,8 @@ class RGBAnimator
     uint8_t data[12];
     uint8_t dat_count;
     
-    uint8_t brightness;
-    uint8_t speed;
+    uint8_t brightness = 100;
+    uint8_t speed = 100;
 
   public:
     RGBAnimation* rgb_animation = 0;

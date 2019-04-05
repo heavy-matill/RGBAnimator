@@ -172,6 +172,7 @@ class RGBAnimator
     RGBTask* pop_task_virt();
     uint8_t time_delta_next = 0;
     color_t get_color_current();
+    color_t get_color_current_wo_brightness();
 
     void set_color(color_t color_2_new);
     //void ChangeBrightness(int8_t change_brightness = 10);

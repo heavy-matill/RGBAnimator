@@ -200,6 +200,16 @@ color_t RGBAnimator::get_color_current()
         return color_t(0,0,0);
     }
 }
+color_t RGBAnimator::get_color_current_wo_brightness()
+{
+    if(rgb_animation){
+        // return full brightness color
+        return rgb_animation->color_current;
+    } else {
+        // return black
+        return color_t(0,0,0);
+    }
+}
 
 void RGBAnimator::set_color(color_t color_2_new)
 {
@@ -341,10 +351,9 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     set_color(color_t(data[1], data[2], data[3]));
                     dat_count = 0;
                     break;
-                case 0x11: // fade to color
-                    color_t col_temp = get_color_current();
+                case 0x11: // fade to color;
                     stop();
-                    add_fade(col_temp, //color_1
+                    add_fade(get_color_current_wo_brightness(), //color_1
                         color_t(data[1], data[2], data[3]), //color_2
                         2000, //time_duration
                         0,  //time_2

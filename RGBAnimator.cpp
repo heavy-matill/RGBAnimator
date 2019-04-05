@@ -228,11 +228,11 @@ void RGBAnimator::start()
 
 void RGBAnimator::set_brightness(uint8_t brightness_new)
 {
-    rgb_animation->color_current = speed_new;
+    brightness = brightness_new;
 }
 void RGBAnimator::set_speed(uint8_t speed_new)
 {
-    rgb_animation->color_current = speed_new;
+    speed = speed_new;
 }
 
 

@@ -83,7 +83,7 @@ class RGBAnimation
     RGBAnimation(RGBTask *task_new);
     ~RGBAnimation();
 
-    uint8_t update(uint8_t time_delta);
+    uint8_t update(uint8_t time_delta, uint8_t current_speed);
     color_t fade(float fac_progress);
 };
 
@@ -160,13 +160,14 @@ class RGBAnimator
     bool b_running;
     uint8_t data[12];
     uint8_t dat_count;
+    uint8_t brightness = 128;
+    uint8_t speed = 16;
     
-    uint8_t brightness = 100;
-    uint8_t speed = 100;
-
   public:
     RGBAnimation* rgb_animation = 0;
     uint8_t animate(uint8_t time_delta);
+    
+
     void get_animation();
     void queue_task(RGBTask *task);
     RGBTask* pop_task_virt();

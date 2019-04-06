@@ -162,7 +162,7 @@ class RGBAnimator
     uint8_t dat_count;
     uint8_t brightness = 128;
     uint8_t speed = 16;
-    
+
   public:
     RGBAnimation* rgb_animation = 0;
     uint8_t animate(uint8_t time_delta);

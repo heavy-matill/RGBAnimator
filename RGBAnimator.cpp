@@ -44,11 +44,12 @@ RGBAnimation::RGBAnimation(RGBTask *task_new)
     time_min_delta = LIM((uint8_t)((float)task->time_2 / (float)task->color_2.maxDiff(task->color_1)));
 };
 
-uint8_t RGBAnimation::update(uint8_t time_delta)
-{
-    // check whether time_delta finishes this animation
-    while(time_left < time_delta)
-    {
+uint8_t RGBAnimation::update(uint8_t time_delta, uint8_t current_speed) {
+    // adjust times to speed
+    uint16_t time_delta_speeded = time_delta * current_speed / 16;
+    uint8_t time_min_delta_speeded = LIM((uint16_t) time_min_delta * current_speed / 16);
+    //  check whether time_delta finishes this animation
+    while(time_left < time_delta_speeded) {
         // this repetition of animation is finished
         if(num_rep_progress > 0)
         {   
@@ -60,14 +61,12 @@ uint8_t RGBAnimation::update(uint8_t time_delta)
                 task->color_1 = color_current;
             }
             // reduce time_delta for next repetition
-            time_delta -= time_left;
+            time_delta_speeded -= time_left;
             // reset time_left for next repetition
             time_left = task->time_sum();
-        }
-        else
-        {
+        } else {
             // switch task colors back if task is going to be repeated and has odd number of repetitions
-            if (task->b_fade && task->b_repeat && task->num_repetitions%2){
+            if (task->b_fade && task->b_repeat && task->num_repetitions%2) {
                 color_current = task->color_2;
                 task->color_2 = task->color_1;
                 task->color_1 = color_current;
@@ -78,15 +77,15 @@ uint8_t RGBAnimation::update(uint8_t time_delta)
     }
 
     // reduce time_left by time_delta to show the animation progress in this repetition
-    time_left -= time_delta;
+    time_left -= time_delta_speeded;
 
     // decide which color to display
     if (time_left > task->time_2) {
         // first part of animation, set color accordingly
         if (task->b_fade) {
             // Calculate color how it should be according to progress
-            color_current = fade((float)(time_left - task->time_2) / (float)task->time_1);            
-            return time_min_delta;   
+            color_current = fade((float)(time_left - task->time_2) / (float) task->time_1);            
+            return time_min_delta_speeded;   
         } else {
             // set color
             color_current = task->color_1;
@@ -109,42 +108,29 @@ color_t RGBAnimation::fade(float fac_progress)
 
 uint8_t RGBAnimator::animate(uint8_t time_delta)
 {
-    if(!rgb_animation){
-        if(!task_list.empty()){
+    if (!rgb_animation) {
+        if(!task_list.empty()) {
             this->get_animation();
         }
     }
-    if(b_running == 0){
+    if (b_running == 0) {
         // return zero so that the user knows that there is nothing to wait for
         // but dont reset time_delta_next so you can continue after setting b_running to true
         return 0;
-    }
-    else
-    {
+    } else {
         // if previous animation has not stopped
-        if(time_delta_next == 0)
-        {
-            if(task_list.empty()&&!this->rgb_animation->task->b_repeat)
-            {
+        if (time_delta_next == 0) {
+            if (task_list.empty()&&!this->rgb_animation->task->b_repeat) {
                 // queue is empty
                 time_delta_next = 0;
                 return 0;
-            }
-            else
-            {
+            } else {
                 // get new animation from queue
                 this->get_animation();
             }
         }           
-        // modify according to speed
-        if(speed!=100) {
-            time_delta = LIM((uint8_t)(float)time_delta / 100.0 * (float) speed);
-            time_delta_next = rgb_animation->update(time_delta);
-            time_delta_next = LIM((uint8_t)(float)time_delta * 100.0 / (float) speed);
-        } else {
-            // update current animation
-            time_delta_next = rgb_animation->update(time_delta);
-        }
+        // update current animation
+        time_delta_next = rgb_animation->update(time_delta, speed);
         return time_delta_next;
     }
 }
@@ -160,9 +146,7 @@ void RGBAnimator::get_animation()
             // queue task again
             this->queue_task(rgb_animation->task);
             b_running=1;
-        }
-        else
-        {
+        } else {
             delete rgb_animation->task;
         }
         // delete old animation
@@ -185,13 +169,12 @@ RGBTask* RGBAnimator::pop_task_virt()
 
 color_t RGBAnimator::get_color_current()
 {
-    if(rgb_animation){
-        if(brightness != 100) {
+    if(rgb_animation) {
+        if(brightness != 128) {
             // return reduced brightness color
-            float fac_brightness = (float) brightness/100.0;
-            return color_t((uint8_t)((float) rgb_animation->color_current.R * fac_brightness), \
-                (uint8_t)((float) rgb_animation->color_current.G * fac_brightness),\
-                (uint8_t)((float) rgb_animation->color_current.B * fac_brightness));
+            return color_t((uint8_t)((uint16_t) rgb_animation->color_current.R * brightness >> 7), \
+                (uint8_t)((uint16_t) rgb_animation->color_current.G * brightness >> 7),\
+                (uint8_t)((uint16_t) rgb_animation->color_current.B * brightness >> 7));
         } 
         // return full brightness color
         return rgb_animation->color_current;
@@ -242,7 +225,7 @@ void RGBAnimator::set_brightness(uint8_t brightness_new)
 }
 void RGBAnimator::set_speed(uint8_t speed_new)
 {
-    speed = speed_new;
+    speed = speed_new;    
 }
 
 
@@ -279,11 +262,10 @@ void RGBAnimator::process_data(uint8_t dat_char)
 {
 	if(!dat_count)
     {
-        if(dat_char<=0x09)
+        if(dat_char<=0x07)
         {
             // valid startbyte for immediate commands
-            switch(dat_char)
-            {
+            switch(dat_char) {
                 case 0x00: // start/resume
                     start();
                     break;			
@@ -319,32 +301,30 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     break;*/	
             }		
         }
-        else if(dat_char>=0x08 && dat_char<=0x15)
-        {
+        else if (dat_char <= 0x15) {
             // valid startbyte for longer commands, set first element of data
             data[dat_count++] = dat_char;            
-        }
-        else
-        {
+        } else {
             // unknown startbyte for commands, dat_count stays at zero
         }
     }
-    else // not first byte
-    {
+    else {// not first byte
         // further bytes of longer commands
         data[dat_count++] = dat_char;
         
-        if(dat_count==2) {
+        if (dat_count == 2) {
             switch(data[0]) {
                 case 0x08: // set brightness
                     set_brightness(data[1]);
+                    dat_count = 0;
                     break;
                 case 0x09: // set speed
                     set_speed(data[1]);
+                    dat_count = 0;
                     break;
             }
         }
-        else if(dat_count==4) {
+        else if (dat_count == 4) {
             switch(data[0]) {
                 case 0x10: // jump to color
                     stop();
@@ -386,12 +366,7 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     break;
             }		
         }
-        else if(dat_count==11) {
-            		switch(data[0]) {
-                
-            }	
-        }
-        else if(dat_count==13) {
+        else if (dat_count == 13) {
             switch(data[0]) {
                 case 0x14: // queue jump between colors
                     add_flash(color_t(data[1], data[2], data[3]), //color_1

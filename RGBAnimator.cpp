@@ -372,7 +372,7 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     add_flash(color_t(data[1], data[2], data[3]), //color_1
                         color_t(data[4], data[5], data[6]), //color_2
                         (uint16_t)(data[7] << 8) + data[8], //time_1
-                        (uint16_t)(data[9] << 10) + data[8], //time_2
+                        (uint16_t)(data[9] << 10) + data[10], //time_2
                         (uint8_t)data[11], //num_repetitions
                         (bool)data[12]); //b_repeat
                     dat_count = 0;
@@ -381,7 +381,7 @@ void RGBAnimator::process_data(uint8_t dat_char)
                     add_fade(color_t(data[1], data[2], data[3]), //color_1
                         color_t(data[4], data[5], data[6]), //color_2
                         (uint16_t)(data[7] << 8) + data[8], //time_1
-                        (uint16_t)(data[9] << 10) + data[8], //time_2
+                        (uint16_t)(data[9] << 10) + data[10], //time_2
                         (uint8_t)data[11], //num_repetitions
                         (bool)data[12]); //b_repeat
                     dat_count = 0;

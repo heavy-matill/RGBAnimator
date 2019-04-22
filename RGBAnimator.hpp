@@ -157,7 +157,6 @@ class RGBTaskList
 class RGBAnimator
 {
   private:  
-    bool b_running;
     uint8_t data[12];
     uint8_t dat_count;
     uint8_t brightness = 128;
@@ -166,6 +165,7 @@ class RGBAnimator
   public:
     RGBAnimation* rgb_animation = 0;
     uint8_t animate(uint8_t time_delta);
+    bool b_running;
     
 
     void get_animation();

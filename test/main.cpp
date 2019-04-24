@@ -18,6 +18,7 @@ int main()
 
     animor.add_fade(color_t(0,255,0), color_t(255,0,255),20,10,3,true);
     animor.add_flash(color_t(0,255,0), color_t(255,0,100),10,10,4,true);
+    animor.add_flash(color_t(0,255,0), color_t(255,0,100),10,10,1,false);
     animor.set_speed(64);
     animor.start();
     animor.animate(2);

@@ -111,7 +111,7 @@ class RGBTaskList
 	}
 	void push(RGBTask *task)
 	{
-		RGBTaskNode *temp=new RGBTaskNode();
+		RGBTaskNode *temp = new RGBTaskNode();
 		temp->task=task;
     if(head==NULL)
     {
@@ -124,10 +124,9 @@ class RGBTaskList
       tail = temp;
     }
 	}
-	RGBTask *pop()
+	RGBTask* pop()
 	{
-		RGBTaskNode *temp=new RGBTaskNode();
-		temp=head;
+		RGBTaskNode* temp=head;
 		head=head->next;
 		RGBTask *task = temp->task;
 		delete temp;

@@ -233,7 +233,7 @@ void RGBAnimator::clear_list()
 {
     while(!task_list.empty())
     {
-        task_list.pop();
+        delete task_list.pop();
     }    
 }
 void RGBAnimator::add_flash(color_t color_1_new, color_t color_2_new, uint16_t time_1_new, uint16_t time_2_new, uint8_t num_repetitions_new, bool b_repeat_new)

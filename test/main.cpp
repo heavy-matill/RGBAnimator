@@ -16,23 +16,23 @@ int main()
 
     RGBAnimator animor;
 
-    animor.add_fade(color_t(0,255,0), color_t(255,0,255),20,10,3,true);
+    animor.add_fade(color_t(255,0,0), color_t(0,255,255),20,10,3,true); // fade ist einer zu wenig flash einer zu viel
     animor.add_flash(color_t(0,255,0), color_t(255,0,100),10,10,4,true);
-    animor.add_flash(color_t(0,255,0), color_t(255,0,100),10,10,1,false);
+    animor.add_flash(color_t(0,0,255), color_t(0,0,50),10,10,2,false);
     animor.set_speed(64);
     animor.start();
-    animor.animate(2);
+    animor.process(2);
     //animor.rgb_animation = fdt1->GetAnimation();
     paint_col(animor.get_color_current()); 
     printf("%u", animor.task_list.size());
-    //printf("%u", animor.rgb_animation);
+    //printf("%u", animor.rgb_animation);0,
     //animor.rgb_animation = animor.pop_task_virt()->GetAnimation();   
     //animor.RGBTaskList.push_back(flt1);  
     //RGBTask* task = *animor.RGBTaskList.begin();
     //RGBAnimation* anim = task->GetAnimation();
     while(1)
     {
-        animor.animate(2);
+        animor.process(1);
         paint_col(animor.get_color_current());    
         printf("%u", animor.task_list.size());
         //printf("%f, %u", anim->fac_progress_, anim->num_rep_progress);

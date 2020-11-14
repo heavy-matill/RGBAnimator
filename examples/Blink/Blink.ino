@@ -17,7 +17,6 @@ void setup()
 
     animor.start();
     last = millis();
-    // starts with number 1 in queue?
 }
 void paint_col(color_t col)
 {

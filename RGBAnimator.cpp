@@ -87,7 +87,7 @@ uint8_t RGBAnimation::progress_color(uint16_t time_delta_speeded)
         // second part of animation
         // set color2 for both flash and hold after fade
         color_current = task->color_2;
-        return LIM(task->time_2 - time_left);
+        return LIM(time_left);
     }
 }
 
